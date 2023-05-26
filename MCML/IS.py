@@ -57,27 +57,27 @@ class MCML:
             # определяем функции распределения фотонов при генерации по координате и углу
             if cnf['Surface_spatial_distribution'] == 'Gauss':
                 spatial_distribution = self.get_func_gauss_distribution()
-            elif cnf['Surface_spatial_distribution'] == 'Cyrcle':
-                raise ValueError("todo get_func_cyrcle_distribution")
+            elif cnf['Surface_spatial_distribution'] == 'Circle':
+                raise ValueError('todo get_func_circle_distribution')
             else:
-                raise ValueError("Unknown Surface_spatial_distribution")
+                raise ValueError('Unknown Surface_spatial_distribution')
 
             if cnf['Surface_angular_distribution'] == 'Collimated':
                 angular_distribution = self.get_func_collimated_distribution()
             elif cnf['Surface_angular_distribution'] == 'Diffuse':
-                raise ValueError("todo Surface_angular_distribution == Diffuse")
+                raise ValueError('todo Surface_angular_distribution == Diffuse')
             elif cnf['Surface_angular_distribution'] == 'HG':
-                raise ValueError("todo Surface_angular_distribution == HG")
+                raise ValueError('todo Surface_angular_distribution == HG')
             else:
-                raise ValueError("Unknown Surface_angular_distribution")
+                raise ValueError('Unknown Surface_angular_distribution')
             # определяем функцию генерации
             self.generator = self.get_func_generator(spatial_distribution, angular_distribution)
 
         # генерация фотонов во всем объеме среды (чтобы адекватно замоделировать например гаусс с перетяжкой внутри)
         elif cnf['mode_generator'] == 'Volume':
-            raise ValueError("todo mode_generator == Volume")
+            raise ValueError('todo mode_generator == Volume')
         else:
-            raise ValueError("Unknown mode_generator")
+            raise ValueError('Unknown mode_generator')
 
     def get_func_generator(self, spatial_distribution, angular_distribution):
         """
