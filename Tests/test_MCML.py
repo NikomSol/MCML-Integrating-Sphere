@@ -11,6 +11,7 @@ class TestMCML(TestCase):
 
     cnf = {
         'N': 100000,
+        'threads': 1,
 
         'mode_generator': 'Surface',
         'Surface_spatial_distribution': 'Gauss',
@@ -30,7 +31,7 @@ class TestMCML(TestCase):
 
         MCML(cnf, obj)
 
-        cnf['Surface_spatial_distribution'] = "Cyrcle"
+        cnf['Surface_spatial_distribution'] = "Circle"
         with self.assertRaises(ValueError):
             MCML(cnf, obj)
         cnf['Surface_spatial_distribution'] = "Gauss"
