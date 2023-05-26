@@ -50,7 +50,7 @@ class MCML:
         Определяем функцию генератора фотонов
         """
         cnf = self.cnf
-        mode_generator = cnf['mode_generator'] 
+        mode_generator = cnf['mode_generator']
         mode_spatial_distribution = cnf['mode_spatial_distribution']
         mode_angular_distribution = cnf['mode_angular_distribution']
 
@@ -70,8 +70,8 @@ class MCML:
             print('Unknown mode: ' + mode_generator + ' or ' +
                   mode_spatial_distribution + ' or ' + mode_angular_distribution)
             raise
-
-        self.generator = self.get_func_generator(spatial_distribution, angular_distribution)
+        else:
+            self.generator = self.get_func_generator(spatial_distribution, angular_distribution)
 
     def get_func_generator(self, spatial_distribution, angular_distribution):
         """
@@ -139,17 +139,24 @@ class MCML:
         save_interpreter - интерпретатор сохраненных данных (точно нужно вынести это все в отдельный класс)
         """
         cnf = self.cnf
-        if cnf['mode_save'] == 'FIS':
-            self.save_obj = self.get_obj_save_data_FIS
-            self.save_data = self.save_obj()
-            self.save_prog = self.get_func_save_prog_FIS()
-            self.save_end = self.get_func_save_end_FIS()
-            self.save_interpreter = self.get_func_save_interpreter_FIS()
-            # raise ValueError("todo FIS")
-        elif cnf['mode_save'] == 'MIS':
-            raise ValueError("todo MIS")
+        mode_save = cnf['mode_save']
+        
+        modes = {
+            'FIS': [self.get_obj_save_data_FIS, self.get_func_save_prog_FIS,
+                    self.get_func_save_end_FIS, self.get_func_save_interpreter_FIS]
+        }
+        
+        try:
+            mode_func_table = modes[mode_save]
+        except KeyError:
+            print('Unknown mode: ' + mode_save)
+            raise
         else:
-            raise ValueError("Unknown mode_save")
+            self.save_obj = mode_func_table[0]
+            self.save_data = self.save_obj()
+            self.save_prog = mode_func_table[1]()
+            self.save_end = mode_func_table[2]()
+            self.save_interpreter = mode_func_table[3]()
 
     def get_obj_save_data_FIS(self):
         """
