@@ -13,10 +13,11 @@ if __name__ == '__main__':
             'threads': 1,  # max cpu_count()-1
 
             'mode_generator': 'Surface',  # Surface // Volume (todo)
-            'Surface_spatial_distribution': 'Gauss',  # Gauss // Circle (todo)
+            'mode_spatial_distribution': 'Gauss',  # Gauss // Circle (todo)
+            'mode_angular_distribution': 'Collimated',  # Collimated // Diffuse (todo) // HG (todo)
+            
             'Surface_beam_diameter': 1,
             'Surface_beam_center': np.array([0, 0, 0]),
-            'Surface_angular_distribution': 'Collimated',  # Collimated // Diffuse (todo) // HG (todo)
             'Surface_anisotropy_factor': 0.8,
 
             'mode_save': 'FIS',  # MIS (todo) // FIS (todo)
