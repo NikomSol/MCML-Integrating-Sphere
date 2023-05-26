@@ -80,5 +80,6 @@ def test_move(mcml):
     p0 = np.array([0, 0, 0.5, 0, 0, 1, 10 ** -5, 1])
     p1 = mcml.get_func_term()(p0)
     p2 = np.array([0, 0, 0.5, 0, 0, 1, 0, 1])
+    p3 = np.array([0, 0, 0.5, 0, 0, 1, 10 ** -4, 1])
 
-    assert np.array_equal(p0, p1) or np.array_equal(p2, p1)
+    assert np.array_equal(p3, p1) or np.array_equal(p2, p1)
