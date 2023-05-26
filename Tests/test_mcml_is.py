@@ -37,11 +37,11 @@ def mcml(obj, cfg):
 
 @pytest.mark.parametrize(
     'key, value, exc', [
-        ('Surface_spatial_distribution', 'Circle', 'todo get_func_circle_distribution'),
-        ('Surface_spatial_distribution', 'KWA', 'Unknown Surface_spatial_distribution'),
-        ('Surface_angular_distribution', 'Diffuse', 'todo Surface_angular_distribution == Diffuse'),
-        ('Surface_angular_distribution', 'HG', 'todo Surface_angular_distribution == HG'),
-        ('Surface_angular_distribution', 'KWA', 'Unknown Surface_angular_distribution'),
+        ('mode_spatial_distribution', 'Circle', 'Unknown mode'),
+        ('mode_spatial_distribution', 'KWA', 'Unknown Surface_spatial_distribution'),
+        ('mode_angular_distribution', 'Diffuse', 'todo Surface_angular_distribution == Diffuse'),
+        ('mode_angular_distribution', 'HG', 'todo Surface_angular_distribution == HG'),
+        ('mode_angular_distribution', 'KWA', 'Unknown Surface_angular_distribution'),
         ('mode_generator', 'Volume', 'todo mode_generator == Volume'),
         ('mode_generator', 'KWA', 'Unknown mode_generator'),
         ('mode_save', 'MIS', 'todo MIS')
