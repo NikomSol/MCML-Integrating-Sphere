@@ -429,10 +429,10 @@ class MCML:
 
     def get_func_trace(self):
         """
-        Возвращаем функцию, которая обеспечивает пролет одного фотона
-        Она возвращает локальный save_data которые потом можно проссумировать по всем фотонам
+        Calculate one photon trace function
+        Return one photon save_data
         """
-        # Тут и используем все созданные нами numba функции
+        # Use all created numba-function
         gen = self.generator
         move = self.get_func_move()
         term = self.get_func_term()
@@ -445,9 +445,9 @@ class MCML:
         @njit(nopython=True)
         def trace():
             save_data = save_obj_local
-            p_gen = gen() #Save start photon parameters
-            p_turn = p_gen * 1. #First cycle photon parameters
-            for j in range(10 ** 3):
+            p_gen = gen()  # Save start photon parameters
+            p_turn = p_gen * 1.  # First cycle photon parameters
+            for _ in range(10 ** 3):
                 p_move = move(p_turn)
 
                 # Check leave calc area
@@ -480,7 +480,7 @@ class MCML:
             # Один таск - N фотонов, результат одного таска сохраняется в локальную переменную save_data_task
             def task(i):
                 save_data_task = self.save_obj()
-                for i in range(N):
+                for _ in range(N):
                     save_data_task += trace()
                 return save_data_task
 
@@ -495,7 +495,7 @@ class MCML:
                 pool.join()
         elif threads == 1:
             # Если 1 тред, то можно и не параллелись
-            for i in range(N):
+            for _ in range(N):
                 save_data_run += trace()
         else:
             raise ValueError("threads out of (1, cpu_count-1)")
