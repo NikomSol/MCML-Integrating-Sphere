@@ -109,9 +109,8 @@ class MCML:
         """
         Возвращаем функцию, которая возвращает случайные координаты фотона, в соответсвии с гауссовым распределением
         """
-        cfg = self.cfg
-        x0, y0, z0 = cfg['Surface_beam_center']
-        w = cfg['Surface_beam_diameter']
+        x0, y0, z0 = self.cfg['Surface_beam_center']
+        w = self.cfg['Surface_beam_diameter']
 
         @njit(fastmath=True)
         def buf():
@@ -146,7 +145,6 @@ class MCML:
         save_end - функция записывающая в save_data после того как фотон закончил распространяться
         save_interpreter - интерпретатор сохраненных данных (точно нужно вынести это все в отдельный класс)
         """
-        cfg = self.cfg
 
         modes = {
             'FIS': [
@@ -157,9 +155,9 @@ class MCML:
             ]
         }
 
-        if 'mode_save' not in cfg:
+        if 'mode_save' not in self.cfg:
             raise KeyError('mode_save key is absent in cfg')
-        mode_save = cfg['mode_save']
+        mode_save = self.cfg['mode_save']
 
         if mode_save not in modes:
             raise KeyError(f'{mode_save} key is absent in modes')
