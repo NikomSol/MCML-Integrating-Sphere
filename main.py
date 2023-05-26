@@ -8,25 +8,25 @@ if __name__ == '__main__':
             {'z_start': 2, 'z_end': 3, 'mu_a': 0,     'mu_s': 0.01,     'g': 1,      'n': 1}
     ]
 
-    cnf = {
+    cfg = {
             'N': 1000,  # in one thread
             'threads': 1,  # max cpu_count()-1
 
             'mode_generator': 'Surface',  # Surface // Volume (todo)
             'mode_spatial_distribution': 'Gauss',  # Gauss // Circle (todo)
             'mode_angular_distribution': 'Collimated',  # Collimated // Diffuse (todo) // HG (todo)
-             
+
             'Surface_beam_diameter': 1,
             'Surface_beam_center': np.array([0, 0, 0]),
             'Surface_anisotropy_factor': 0.8,
 
             'mode_save': 'FIS',  # MIS (todo) // FIS (todo)
-            'FIS_collimated_cosinus': 0.99,
+            'FIS_collimated_cosine': 0.99,
             'MIS_sphere_type': 'Thorlabs_IS200',
             'MIS_positions_table': np.linspace(0, 200, 10)
     }
 
-    mcml = MCML(cnf, obj)
+    mcml = MCML(cfg, obj)
     mcml.run()
     print(mcml.save_data)
     print(mcml.get_output())

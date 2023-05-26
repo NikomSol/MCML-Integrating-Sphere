@@ -1,6 +1,6 @@
 # IS class
 # Class functions: parse IS modes, get difference data
-# Input cnf, object
+# Input cfg, object
 # Output data dicts/array and graphs
 
 
@@ -10,23 +10,23 @@ from numba import njit
 
 """
 Суть процесса
-- интерпретировать входные данные cnf, obj
+- интерпретировать входные данные cfg, obj
 - в зависимости от типа задачи определяем numba функции gen, move, term, turn....
 - запускаем run с использованием полученных функций в котором параллелим в каждом потоке считая по N фотонов
 """
 
 
 class MCML:
-    def __init__(self, cnf: dict, obj: list) -> None:
+    def __init__(self, cfg: dict, obj: list):
         """
-        :param cnf: Настройки решателя (todo через классы)
+        :param cfg: Настройки решателя (todo через классы)
         :param obj: Геометрия и свойства среды (todo через классы)
         """
-        self.cnf = cnf
+        self.cfg = cfg
         self.obj = obj
 
-        self.N = cnf['N']
-        self.threads = cnf['threads']
+        self.N = cfg['N']
+        self.threads = cfg['threads']
         layers_number = len(obj)
         self.z_start_table = np.array([obj[i]['z_start'] for i in range(layers_number)])
         self.z_end_table = np.array([obj[i]['z_end'] for i in range(layers_number)])
@@ -37,22 +37,19 @@ class MCML:
 
         self.parse_modes()
 
-    def parse_modes(self):
+    def parse_modes(self) -> None:
         """
-        Определяем моды задачи, указанные в cnf
+        Определяем моды задачи, указанные в cfg
         """
         self.parse_mode_generator()
         self.parse_mode_save()
 
     # parse_mode_generator
-    def parse_mode_generator(self):
+    def parse_mode_generator(self) -> None:
         """
         Определяем функцию генератора фотонов
         """
-        cnf = self.cnf
-        mode_generator = cnf['mode_generator']
-        mode_spatial_distribution = cnf['mode_spatial_distribution']
-        mode_angular_distribution = cnf['mode_angular_distribution']
+        cfg = self.cfg
 
         modes = {
             'Surface': {
@@ -63,24 +60,35 @@ class MCML:
             }
         }
 
-        try:
-            spatial_distribution = modes[mode_generator][mode_spatial_distribution]
-            angular_distribution = modes[mode_generator][mode_angular_distribution]
-        except KeyError:
-            print('Unknown mode: ' + mode_generator + ' or ' +
-                  mode_spatial_distribution + ' or ' + mode_angular_distribution)
-            raise
-        else:
-            self.generator = self.get_func_generator(spatial_distribution, angular_distribution)
+        if 'mode_generator' not in cfg:
+            raise KeyError('mode_generator key is absent in cfg')
+        mode_generator = cfg['mode_generator']
+        if 'mode_spatial_distribution' not in cfg:
+            raise KeyError('mode_spatial_distribution key is absent in cfg')
+        mode_spatial_distribution = cfg['mode_spatial_distribution']
+        if 'mode_angular_distribution' not in cfg:
+            raise KeyError('mode_angular_distribution key is absent in cfg')
+        mode_angular_distribution = cfg['mode_angular_distribution']
 
-    def get_func_generator(self, spatial_distribution, angular_distribution):
+        if mode_generator not in modes:
+            raise KeyError(f'{mode_generator} key is absent in modes')
+        if mode_spatial_distribution not in modes[mode_generator]:
+            raise KeyError(f'{mode_spatial_distribution} key is absent in modes[{mode_generator}]')
+        spatial_distribution = modes[mode_generator][mode_spatial_distribution]
+        if mode_angular_distribution not in modes[mode_generator]:
+            raise KeyError(f'{mode_angular_distribution} key is absent in modes[{mode_generator}]')
+        angular_distribution = modes[mode_generator][mode_angular_distribution]
+
+        self.generator = self.get_func_generator(spatial_distribution, angular_distribution)
+
+    def get_func_generator(self, spatial_distribution: str, angular_distribution: str):
         """
         Возвращает сгенерированное начальное состояние фотона (фотон может сгенериться и на поверхности)
         :param spatial_distribution: Возвращает случайные координаты фотона
         :param angular_distribution: Возвращает случайные направляющие косинусы фотона
         :return: Фотон
         """
-        z0 = self.cnf['Surface_beam_center'][2]
+        z0 = self.cfg['Surface_beam_center'][2]
         layer_index = self.get_layer_index_from_z(z0)
 
         @njit(fastmath=True)
@@ -101,9 +109,9 @@ class MCML:
         """
         Возвращаем функцию, которая возвращает случайные координаты фотона, в соответсвии с гауссовым распределением
         """
-        cnf = self.cnf
-        x0, y0, z0 = cnf['Surface_beam_center']
-        w = cnf['Surface_beam_diameter']
+        cfg = self.cfg
+        x0, y0, z0 = cfg['Surface_beam_center']
+        w = cfg['Surface_beam_diameter']
 
         @njit(fastmath=True)
         def buf():
@@ -128,7 +136,7 @@ class MCML:
         return buf
 
     # parse_mode_output
-    def parse_mode_save(self):
+    def parse_mode_save(self) -> None:
         """
         Определяем мод связанные с сохранением данных
 
@@ -138,25 +146,30 @@ class MCML:
         save_end - функция записывающая в save_data после того как фотон закончил распространяться
         save_interpreter - интерпретатор сохраненных данных (точно нужно вынести это все в отдельный класс)
         """
-        cnf = self.cnf
-        mode_save = cnf['mode_save']
-        
+        cfg = self.cfg
+
         modes = {
-            'FIS': [self.get_obj_save_data_FIS, self.get_func_save_prog_FIS,
-                    self.get_func_save_end_FIS, self.get_func_save_interpreter_FIS]
+            'FIS': [
+                self.get_obj_save_data_FIS,
+                self.get_func_save_prog_FIS,
+                self.get_func_save_end_FIS,
+                self.get_func_save_interpreter_FIS
+            ]
         }
-        
-        try:
-            mode_func_table = modes[mode_save]
-        except KeyError:
-            print('Unknown mode: ' + mode_save)
-            raise
-        else:
-            self.save_obj = mode_func_table[0]
-            self.save_data = self.save_obj()
-            self.save_prog = mode_func_table[1]()
-            self.save_end = mode_func_table[2]()
-            self.save_interpreter = mode_func_table[3]()
+
+        if 'mode_save' not in cfg:
+            raise KeyError('mode_save key is absent in cfg')
+        mode_save = cfg['mode_save']
+
+        if mode_save not in modes:
+            raise KeyError(f'{mode_save} key is absent in modes')
+        mode_func_table = modes[mode_save]
+
+        self.save_obj = mode_func_table[0]
+        self.save_data = self.save_obj()
+        self.save_prog = mode_func_table[1]()
+        self.save_end = mode_func_table[2]()
+        self.save_interpreter = mode_func_table[3]()
 
     def get_obj_save_data_FIS(self):
         """
@@ -180,6 +193,7 @@ class MCML:
 
         @njit(fastmath=True)
         def buf(p_gen, p_move, p_term, p_turn, save_data_old):
+            _, _, _, _ = p_gen, p_move, p_term, p_turn  # to supress unused variable
             return save_data_old
 
         return buf
@@ -195,19 +209,20 @@ class MCML:
         Записываем в конце сколько куда вылетело и сколько поглотилось
         """
 
-        collimated_cosinus = self.cnf['FIS_collimated_cosinus']
+        collimated_cosine = self.cfg['FIS_collimated_cosine']
 
         @njit(fastmath=True)
         def buf(p_gen, p_move, p_term, p_turn, save_data_old):
+            _, _ = p_term, p_turn  # to supress unused variable
             save_data = save_data_old * 1.
             save_data[-1] += p_gen[-2] - p_move[-2]
             if p_move[-1] == -2:
-                if p_move[5] > collimated_cosinus:
+                if p_move[5] > collimated_cosine:
                     save_data[0] += p_move[-2]
                 else:
                     save_data[1] += p_move[-2]
             elif p_move[-1] == -1:
-                if p_move[5] > - collimated_cosinus:
+                if p_move[5] > - collimated_cosine:
                     save_data[2] += p_move[-2]
                 else:
                     save_data[3] += p_move[-2]
@@ -240,7 +255,7 @@ class MCML:
 
     # get engin jit function trace/move/turn/term/reflection/R_frenel
 
-    def get_func_R_frenel(self):
+    def get_func_R_frenel(self) -> float:
         @njit(fastmath=True)
         def R_frenel(th, n1, n2):  # Определения коэффициента Френеля с учетом неполяризованного излучения
             if th > np.pi / 2:
@@ -261,12 +276,12 @@ class MCML:
                 return a / b
 
             if np.sin(th) >= n2 / n1:  # Полное внутренне отражение
-                res = 1.
+                res = 1.0
             else:
                 res = 0.5 * ((rs(cos_th1, cos_th2, n1, n2)) ** 2 + (rp(cos_th1, cos_th2, n1, n2)) ** 2)
 
             if res < 1e-6:
-                res = 0.
+                res = 0.0
             return res
 
         return R_frenel
@@ -347,8 +362,8 @@ class MCML:
                     new_p_y = p[1] + l_layer * p[4]
                     p[0], p[1], p[2] = new_p_x, new_p_y, new_p_z
                     p[6] = p[6] * np.exp(-mu_a * l_layer)
-                    break              
-                # С взаимодействием с границей раздела сред
+                    break
+                    # С взаимодействием с границей раздела сред
                 # Расчет на сколько мы переместились до границы
                 if p[5] > 0:
                     l_part = (z_end - p[2]) / p[5]
@@ -479,6 +494,7 @@ class MCML:
             # Параллелим
             # Один таск - N фотонов, результат одного таска сохраняется в локальную переменную save_data_task
             def task(i):
+                _ = i  # to suppress unused variable
                 save_data_task = self.save_obj()
                 for _ in range(N):
                     save_data_task += trace()
@@ -488,7 +504,7 @@ class MCML:
             with Pool(threads) as pool:
                 # threads разделаем task
                 save_data_task = pool.map_async(task, range(threads))
-                # Сохраняем результаты всех таксков в save_data_run
+                # Сохраняем результаты всех тасков в save_data_run
                 for save_data_task in save_data_task.get():  # из того, что вернул таск гетом берем данные?
                     save_data_run += save_data_task
                 pool.close()
@@ -503,7 +519,7 @@ class MCML:
         self.save_data += save_data_run
 
     # help func
-    def get_layer_index_from_z(self, z):
+    def get_layer_index_from_z(self, z: float) -> int:
         """
         Возвращает номер слоя
         -1 слой воздуха z <= zmin, -2 слой воздуха z >= zmax
@@ -513,7 +529,7 @@ class MCML:
         z_start_table = self.z_start_table
         z_end_table = self.z_end_table
 
-        "Генерация на границе с воздухом = генерация в воздухе"
+        # Генерация на границе с воздухом = генерация в воздухе
         if z <= z_start_table[0]:
             return -1
         if z >= z_end_table[-1]:
@@ -524,7 +540,7 @@ class MCML:
                 i += 1
             else:
                 return i - 1
-        return i - 1
+        return i - 1  # TODO: check that i can be undefined for empty z_start_table
 
     # output
     def get_output(self):
