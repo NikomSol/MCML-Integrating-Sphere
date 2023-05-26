@@ -347,31 +347,29 @@ class MCML:
                     new_p_y = p[1] + l_layer * p[4]
                     p[0], p[1], p[2] = new_p_x, new_p_y, new_p_z
                     p[6] = p[6] * np.exp(-mu_a * l_layer)
-                    break
+                    break              
+                # С взаимодействием с границей раздела сред
+                # Расчет на сколько мы переместились до границы
+                if p[5] > 0:
+                    l_part = (z_end - p[2]) / p[5]
                 else:
-                    # С взаимодействием с границей раздела сред
+                    l_part = (z_start - p[2]) / p[5]
 
-                    # Расчет на сколько мы переместились до границы
-                    if p[5] > 0:
-                        l_part = (z_end - p[2]) / p[5]
-                    else:
-                        l_part = (z_start - p[2]) / p[5]
+                # Уменьшаем случайную l_rand в соответсвии с пройденным путем
+                l_rand = l_rand - mu_t * l_part
 
-                    # Уменьшаем случайную l_rand в соответсвии с пройденным путем
-                    l_rand = l_rand - mu_t * l_part
+                # Расчет новой координаты на границе
+                new_p_x = p[0] + l_part * p[3]
+                new_p_y = p[1] + l_part * p[4]
+                new_p_z = p[2] + l_part * p[5]
 
-                    # Расчет новой координаты на границе
-                    new_p_x = p[0] + l_part * p[3]
-                    new_p_y = p[1] + l_part * p[4]
-                    new_p_z = p[2] + l_part * p[5]
+                p[0], p[1], p[2] = new_p_x, new_p_y, new_p_z
+                p[6] = p[6] * np.exp(-mu_a * l_part)
 
-                    p[0], p[1], p[2] = new_p_x, new_p_y, new_p_z
-                    p[6] = p[6] * np.exp(-mu_a * l_part)
-
-                    # Проверка отражения
-                    p = reflection(p)
-                    if p[-1] == -1 or p[-1] == -2:
-                        break
+                # Проверка отражения
+                p = reflection(p)
+                if p[-1] == -1 or p[-1] == -2:
+                    break
 
             return p
 
@@ -447,18 +445,19 @@ class MCML:
         @njit(nopython=True)
         def trace():
             save_data = save_obj_local
-            p_gen = gen()
-            p_turn = p_gen * 1.  # Стартовый p_turn создаем так как цикл именно изменяет p_turn
+            p_gen = gen() #Save start photon parameters
+            p_turn = p_gen * 1. #First cycle photon parameters
             for j in range(10 ** 3):
                 p_move = move(p_turn)
 
-                # Выход из цикла либо из-за вылета либо из-за уменьшения массы до нуля
+                # Check leave calc area
                 if (p_move[-1] == -1 or p_move[-1] == -2):
                     break
-                else:
-                    p_term = term(p_move)
-                    if p_term[-2] == 0:
-                        break
+                # Check small weight
+                p_term = term(p_move)
+                if p_term[-2] == 0:
+                    break
+
                 p_turn = turn(p_term)
                 save_data = save_prog(p_gen, p_move, p_term, p_turn, save_data)
 
@@ -476,7 +475,7 @@ class MCML:
         # создаем локальную переменную save_data_run в которую будем сохранять данные одного run
         save_data_run = self.save_obj()
 
-        if (type(threads) is int) and (cpu_count() > threads > 1):
+        if isinstance(threads, int) and (cpu_count() > threads > 1):
             # Параллелим
             # Один таск - N фотонов, результат одного таска сохраняется в локальную переменную save_data_task
             def task(i):
