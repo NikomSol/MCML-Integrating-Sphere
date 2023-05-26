@@ -1,7 +1,7 @@
-#IS class
-#Class functions: parse IS modes, get difference data
-#Input cnf, object
-#Output data dicts/array and graphs
+# IS class
+# Class functions: parse IS modes, get difference data
+# Input cnf, object
+# Output data dicts/array and graphs
 
 
 import numpy as np
@@ -335,17 +335,17 @@ class MCML:
                 mu_t = mu_a + mu_s
 
                 l_free_path = 1 / mu_t
-                l = l_rand * l_free_path
+                l_layer = l_rand * l_free_path
 
                 # Расчитываем на какую величину мы должны переместиться
-                new_p_z = p[2] + l * p[5]
+                new_p_z = p[2] + l_layer * p[5]
                 # Проверка выхода за границу
                 if z_start < new_p_z < z_end:
                     # Без взаимодействия с границей раздела сред
-                    new_p_x = p[0] + l * p[3]
-                    new_p_y = p[1] + l * p[4]
+                    new_p_x = p[0] + l_layer * p[3]
+                    new_p_y = p[1] + l_layer * p[4]
                     p[0], p[1], p[2] = new_p_x, new_p_y, new_p_z
-                    p[6] = p[6] * np.exp(-mu_a * l)
+                    p[6] = p[6] * np.exp(-mu_a * l_layer)
                     break
                 else:
                     # С взаимодействием с границей раздела сред
