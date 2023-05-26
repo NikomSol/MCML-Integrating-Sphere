@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from mcml import MCML
+from MCML.IS import MCML
 import numpy as np
 
 class TestMCML(TestCase):

@@ -1,6 +1,5 @@
 import numpy as np
-
-from mcml import MCML
+from MCML.IS import MCML
 
 if __name__ == '__main__':
     obj = [

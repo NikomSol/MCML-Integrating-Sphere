@@ -1,3 +1,9 @@
+#IS class
+#Class functions: parse IS modes, get difference data
+#Input cnf, object
+#Output data dicts/array and graphs
+
+
 import numpy as np
 from multiprocess import Pool, cpu_count
 from numba import njit
