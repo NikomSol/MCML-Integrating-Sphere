@@ -441,11 +441,11 @@ class MCML:
         save_prog = self.save_prog
         save_end = self.save_end
 
-        save_data_len = len(self.save_data)
+        save_obj_local = self.save_obj()
 
         @njit(nopython=True)
         def trace():
-            save_data = np.zeros(save_data_len)
+            save_data = save_obj_local
             p_gen = gen()
             p_turn = p_gen * 1.  # Стартовый p_turn создаем так как цикл именно изменяет p_turn
             for j in range(10 ** 3):

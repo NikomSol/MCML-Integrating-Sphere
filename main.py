@@ -27,4 +27,5 @@ if __name__ == '__main__':
 
     mcml = MCML(cnf, obj)
     mcml.run()
+    print(mcml.save_data)
     print(mcml.get_output())
