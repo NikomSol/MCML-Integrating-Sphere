@@ -16,17 +16,21 @@ def obj():
 @pytest.fixture()
 def cfg():
     return {
-        'N': 100000,
-        'threads': 1,
+        'N': 1000,  # in one thread
+        'threads': 1,  # max cpu_count()-1
 
-        'mode_generator': 'Surface',
-        'Surface_spatial_distribution': 'Gauss',
+        'mode_generator': 'Surface',  # Surface // Volume (todo)
+        'mode_spatial_distribution': 'Gauss',  # Gauss // Circle (todo)
+        'mode_angular_distribution': 'Collimated',  # Collimated // Diffuse (todo) // HG (todo)
+
         'Surface_beam_diameter': 1,
         'Surface_beam_center': np.array([0, 0, 0]),
-        'Surface_angular_distribution': 'Collimated',
+        'Surface_anisotropy_factor': 0.8,
 
-        'mode_save': 'FIS',
-        'FIS_collimated_cosinus': 0.99,
+        'mode_save': 'FIS',  # MIS (todo) // FIS (todo)
+        'FIS_collimated_cosine': 0.99,
+        'MIS_sphere_type': 'Thorlabs_IS200',
+        'MIS_positions_table': np.linspace(0, 200, 10)
     }
 
 
@@ -37,21 +41,21 @@ def mcml(obj, cfg):
 
 @pytest.mark.parametrize(
     'key, value, exc', [
-        ('mode_spatial_distribution', 'Circle', 'Unknown mode'),
-        ('mode_spatial_distribution', 'KWA', 'Unknown Surface_spatial_distribution'),
-        ('mode_angular_distribution', 'Diffuse', 'todo Surface_angular_distribution == Diffuse'),
-        ('mode_angular_distribution', 'HG', 'todo Surface_angular_distribution == HG'),
-        ('mode_angular_distribution', 'KWA', 'Unknown Surface_angular_distribution'),
-        ('mode_generator', 'Volume', 'todo mode_generator == Volume'),
-        ('mode_generator', 'KWA', 'Unknown mode_generator'),
-        ('mode_save', 'MIS', 'todo MIS')
+        ('mode_generator', 'Volume', 'Volume key is absent in modes'),
+        ('mode_generator', 'KWA', 'KWA key is absent in modes'),
+        ('mode_spatial_distribution', 'Circle', 'Circle key is absent in modes[Surface]'),
+        ('mode_spatial_distribution', 'KWA', 'KWA key is absent in modes[Surface]'),
+        ('mode_angular_distribution', 'Diffuse', 'Diffuse key is absent in modes[Surface]'),
+        ('mode_angular_distribution', 'HG', 'HG key is absent in modes[Surface]'),
+        ('mode_angular_distribution', 'KWA', 'KWA key is absent in modes[Surface]'),
+        ('mode_save', 'MIS', 'MIS key is absent in modes')
     ]
 )
 def test_modes_errors(obj, cfg, key, value, exc):
     cfg[key] = value
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(KeyError) as exc_info:
         MCML(cfg, obj)
-    assert str(exc_info.value) == exc
+    assert str(exc_info.value) == f"'{exc}'"
 
 
 def test_generator(mcml):
@@ -73,7 +77,7 @@ def test_turn(mcml):
     assert np.array_equal(p0, p1) is False
     assert np.array_equal(p0[:3], p1[:3])
     assert np.array_equal(p0[-2:], p1[-2:])
-    assert 1. == p0[3] ** 2 + p0[4] ** 2 + p0[5] ** 2
+    assert p0[3] ** 2 + p0[4] ** 2 + p0[5] ** 2 == 1
 
 
 def test_move(mcml):
