@@ -1,29 +1,82 @@
 from dataclasses import dataclass
 import numpy as np
+from multiprocess import cpu_count
+import enum
 
 
 @dataclass
-class Configuration:
-    # DirectProblem cfg
-    N: int
+class DirectProblemCfg:
+    N: int = 1000
     threads: int = 1
 
-    # Generator cfg
-    source_dimension: int = 2
-    spatial_distribution: str = 'Gauss'
-    angular_distribution: str = 'Collimated'
+    def validate(self):
+        N = self.N
+        threads = self.threads
+
+        if not isinstance(N, int):
+            raise TypeError(f'N = {N} is not int')
+        if N < 1:
+            raise ValueError(f'N = {N} out of range')
+
+        if not isinstance(threads, int):
+            raise TypeError(f'threads = {threads} is not int')
+        if not (cpu_count > threads > 0):
+            raise TypeError(f'threads = {threads} out of range')
+
+
+class GeneratorModesDimension(enum.Enum):
+    surface = 2
+
+
+class GeneratorModesSpatialDistribution(enum.Enum):
+    gauss = 1
+
+
+class GeneratorModesAxialDistribution(enum.Enum):
+    collimated = 1
+
+
+@dataclass
+class GeneratorCfg:
+    mode_source_dimension: GeneratorModesDimension = GeneratorModesDimension.surface
+    mode_spatial_distribution: GeneratorModesSpatialDistribution = GeneratorModesSpatialDistribution.gauss
+    mode_angular_distribution:  GeneratorModesAxialDistribution = GeneratorModesAxialDistribution.collimated
     beam_center: np.ndarray = np.array([0, 0, 0])
     beam_diameter: float = 1
 
-    # Detector cfg
-    measurment_type: str = 'FIS'
-    detector_type: str = 'IS_Ideal'
+    def validate(self):
+        # TODO GeneratorCfg.validate 
+        raise NotImplementedError
+
+
+class DetectorModesMeasurement(enum.Enum):
+    FIS = 1
+
+
+class DetectorModesDetector(enum.Enum):
+    IS_Ideal = 1
+
+
+@dataclass
+class DetectorCfg:
+    measurment: DetectorModesMeasurement = DetectorModesMeasurement.FIS
+    detector: DetectorModesDetector = DetectorModesDetector.IS_Ideal
     collimated_cosine: float = 0.99
 
+    def validate(self):
+        # TODO DetectorCfg.validate 
+        raise NotImplementedError
 
-class Sample:
-    def __init__(self, layers: list):
-        self.layers = layers
+
+@dataclass
+class Cfg:
+    direct_problem: DirectProblemCfg()
+    generator: GeneratorCfg()
+    detector: DetectorCfg()
+
+    def validate(self):
+        # TODO Cfg.validate 
+        raise NotImplementedError
 
 
 @dataclass
@@ -35,6 +88,11 @@ class Layer:
     n: float
 
 
+class Sample:
+    def __init__(self, layers: list[Layer]):
+        self.layers = layers
+
+
 class InverseProblem:
     """
     Parse inverse problem config:
@@ -42,31 +100,31 @@ class InverseProblem:
         Choose optimizer
     Solve inverse problem
     """
-    def __init__(self, cfg: Configuration, sample: Sample):
+    def __init__(self, cfg: Cfg, sample: Sample):
         self.cfg = cfg
         self.samle = sample
         self._set_direct_problem()
         self._set_optimezer()
 
     def _set_direct_problem(self):
-        pass
+        raise NotImplementedError()
 
     def _set_optimezer(self):
-        pass
+        raise NotImplementedError()
 
     def solve(self):
-        pass
+        raise NotImplementedError()
 
     def get_solution(self):
-        pass
+        raise NotImplementedError()
 
 
 class Optimizer:
-    def __init__(self, cfg: Configuration):
+    def __init__(self, cfg: Cfg):
         self.cfg = cfg
 
     def optimize(self):
-        pass
+        raise NotImplementedError()
 
 
 class DirectProblem:
@@ -77,7 +135,7 @@ class DirectProblem:
         Choose detector
     Solve direct problem, save data in Detector objeck?
     """
-    def __init__(self, cfg: Configuration, sample: Sample):
+    def __init__(self, cfg: Cfg, sample: Sample):
         self.cfg = cfg
         self.sample = sample
         self._set_engine()
@@ -85,27 +143,27 @@ class DirectProblem:
         self._set_detector()
 
     def _set_engine(self):
-        pass
+        raise NotImplementedError()
 
     def _set_generator(self):
-        pass
+        raise NotImplementedError()
 
     def _set_detector(self):
-        pass
+        raise NotImplementedError()
 
     def solve(self):
-        pass
+        raise NotImplementedError()
 
     def get_solution(self):
-        pass
+        raise NotImplementedError()
 
 
 class Generator:
-    def __init__(self, cfg: Configuration):
+    def __init__(self, cfg: Cfg):
         self.cfg = cfg
 
     def get_generator():
-        pass
+        raise NotImplementedError()
 
 
 class Detector:
@@ -113,18 +171,24 @@ class Detector:
     Save result of Engine / Direct problem work
     Generate empty save object and save function, that can be used by the Engine
     """
-    def __init__(self, cfg: Configuration):
+    def __init__(self, cfg: Cfg):
         self.cfg = cfg
         self.data = self.get_data_object()
 
     def get_data_object(self):
-        pass
+        raise NotImplementedError()
 
     def get_save_progres(self):
-        pass
+        raise NotImplementedError()
 
     def get_save_end(self):
-        pass
+        raise NotImplementedError()
+
+
+class FixedIntegratingSphere(Detector):
+    # TODO FixedIntegratingSphere
+    def __init__(self) -> None:
+        raise NotImplementedError()
 
 
 class Engine:
@@ -132,7 +196,7 @@ class Engine:
     Calculate engin function
     Run tracing and calculate detected signal, save data in Detector objeck?
     """
-    def __init__(self, cfg: Configuration, sample: Sample, gen: Generator, det: Detector):
+    def __init__(self, cfg: Cfg, sample: Sample, gen: Generator, det: Detector):
         self.cfg = cfg
         self.samle = sample
         self.gen = gen
@@ -140,27 +204,29 @@ class Engine:
         self.trace = self._get_trace()
 
     def _get_move(self):
-        pass
+        raise NotImplementedError()
 
     def _get_turn(self):
-        pass
+        raise NotImplementedError()
 
     def _get_term(self):
-        pass
+        raise NotImplementedError()
 
     def _get_reflection(self):
-        pass
+        raise NotImplementedError()
 
     def _get_trace(self):
-        pass
+        raise NotImplementedError()
 
     def run(self, N=None):
-        pass
+        raise NotImplementedError()
 
 
 class Plotter:
-    pass
+    def __init__(self) -> None:
+        raise NotImplementedError()
 
 
 class FileManager:
-    pass
+    def __init__(self) -> None:
+        raise NotImplementedError()
