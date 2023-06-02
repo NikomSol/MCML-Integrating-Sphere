@@ -7,9 +7,9 @@ from source.cfg import SourceCfg
 
 @dataclass
 class Cfg:
-    direct_problem: DirectProblemCfg = field(default_factory=lambda: DirectProblemCfg())
-    source: SourceCfg = field(default_factory=lambda: SourceCfg())
-    detector: DetectorCfg = field(default_factory=lambda: DetectorCfg())
+    direct_problem: DirectProblemCfg = field(default_factory=DirectProblemCfg())
+    source: SourceCfg = field(default_factory=SourceCfg())
+    detector: DetectorCfg = field(default_factory=DetectorCfg())
 
     def validate(self):
         self.direct_problem.validate()
