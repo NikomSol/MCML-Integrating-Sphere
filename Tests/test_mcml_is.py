@@ -1,7 +1,12 @@
+import sys
+
+# Well, you'll have to deal with that for a while
+sys.path.append(".")
+
 import numpy as np
 import pytest
 
-from MCML.IS import MCML
+from old_code.MCML.IS import MCML
 
 
 @pytest.fixture()

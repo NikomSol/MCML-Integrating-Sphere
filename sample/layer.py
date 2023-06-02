@@ -15,15 +15,15 @@ class Layer:
     start: float = None
     end: float = None
 
-    def get_func_is_insite(self):
+    def get_func_is_inside(self):
         start = self.start
         end = self.end
 
         @njit(fastmath=True)
-        def is_insite(z):
+        def is_inside(z):
             if start < z < end:
                 return True
             else:
                 return False
 
-        return is_insite
+        return is_inside

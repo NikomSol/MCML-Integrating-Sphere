@@ -1,8 +1,8 @@
+from cfg import Cfg
 from detector import DetectorCfg
 from direct_problem import DirectProblemCfg
 from sample import Sample, Layer
 from source import Source, SourceCfg
-from cfg import Cfg
 
 # from direct_problem.direct_problem import DirectProblem
 
