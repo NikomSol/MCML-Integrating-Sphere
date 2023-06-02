@@ -54,7 +54,7 @@ def test_cfg_is_invalid(key, cfg, schema, types_and_values):
     # split key
     keys = key.split(':')
 
-    # remove the last key
+    # get to the right config node
     subcfg = cfg
     subschema = schema
     for subkey in keys[:-1]:
