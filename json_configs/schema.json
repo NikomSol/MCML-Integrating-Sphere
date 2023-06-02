@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Full json schema",
+  "description": "Full settings",
+  "type": "object",
+  "properties": {
+    "engine": {
+      "$ref": "file:engine_schema.json"
+    }
+  },
+  "required": [
+      "engine"
+  ],
+  "additionalProperties": false
+}

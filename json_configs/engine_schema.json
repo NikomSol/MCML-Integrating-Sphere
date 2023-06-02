@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Engine json schema",
+  "description": "Engine settings",
+  "type": "object",
+  "properties": {
+    "threads": {
+      "description": "Number of threads used during simulation",
+      "type": "integer",
+      "minimum": 1
+    },
+    "photons": {
+      "description": "Number of photons used during simulation",
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "threads",
+    "photons"
+  ],
+  "additionalProperties": false
+}
