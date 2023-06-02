@@ -78,7 +78,7 @@ def test_cfg_with_wrong_spatial_distribution(cfg, value, error):
     assert str(exc_info.value) == error
 
 
-def test_cfg_all_spatial_distribution(cfg):
+def test_cfg_all_angular_distribution(cfg):
     for variant in AngularDistribution:
         cfg.angular_distribution = variant
         cfg.validate()
@@ -90,7 +90,7 @@ def test_cfg_all_spatial_distribution(cfg):
         (dict(), 'angular_distribution = None in SourceCfg'),
     ]
 )
-def test_cfg_with_wrong_dimension(cfg, value, error):
+def test_cfg_with_wrong_angular_distribution(cfg, value, error):
     cfg.angular_distribution = value
     with pytest.raises(ValueError) as exc_info:
         cfg.validate()
