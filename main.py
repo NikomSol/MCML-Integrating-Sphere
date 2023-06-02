@@ -1,32 +1,33 @@
-import numpy as np
-from MCML.IS import MCML
+from direct_problem.cfg import DirectProblemCfg
+from source.cfg import SourceCfg
+from detector.cfg import DetectorCfg
+from cfg import Cfg
 
-if __name__ == '__main__':
-    obj = [
-            {'z_start': 0, 'z_end': 1, 'mu_a': 0,     'mu_s': 0.01,     'g': 1,      'n': 1},
-            {'z_start': 1, 'z_end': 2, 'mu_a': 0.1,   'mu_s': 5,        'g': 0.9376, 'n': 1.4},
-            {'z_start': 2, 'z_end': 3, 'mu_a': 0,     'mu_s': 0.01,     'g': 1,      'n': 1}
-    ]
+from sample.sample import Sample, Layer
+from source.source import Source
 
-    cfg = {
-            'N': 1000,  # in one thread
-            'threads': 1,  # max cpu_count()-1
+# from direct_problem.direct_problem import DirectProblem
 
-            'mode_generator': 'Surface',  # Surface // Volume (todo)
-            'mode_spatial_distribution': 'Gauss',  # Gauss // Circle (todo)
-            'mode_angular_distribution': 'Collimated',  # Collimated // Diffuse (todo) // HG (todo)
 
-            'Surface_beam_diameter': 1,
-            'Surface_beam_center': np.array([0, 0, 0]),
-            'Surface_anisotropy_factor': 0.8,
+source_cfg = SourceCfg()
+detector_cfg = DetectorCfg()
+dir_prob_cfg = DirectProblemCfg()
 
-            'mode_save': 'FIS',  # MIS (todo) // FIS (todo)
-            'FIS_collimated_cosine': 0.99,
-            'MIS_sphere_type': 'Thorlabs_IS200',
-            'MIS_positions_table': np.linspace(0, 200, 10)
-    }
+cfg = Cfg(source=source_cfg,
+          detector=detector_cfg,
+          direct_problem=dir_prob_cfg)
 
-    mcml = MCML(cfg, obj)
-    mcml.run()
-    print(mcml.save_data)
-    print(mcml.get_output())
+sample = Sample([
+    Layer(start=0., end=1.,
+          mu_a=1., mu_s=1., g=0.9, n=1.5),
+    Layer(start=1., end=2.,
+          mu_a=1., mu_s=1., g=0.9, n=1.5)
+])
+
+layer_index = sample.get_func_layer_index()
+assert (layer_index(1.5) == 1)
+assert (layer_index(0.5) == 0)
+assert (layer_index(2.5) == -2)
+assert (layer_index(-1.) == -1)
+
+source = Source(cfg.source, sample)
