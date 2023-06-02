@@ -94,9 +94,9 @@ def test_cfg_is_invalid(key, cfg, schema, types_and_values):
     # change type of the field for validation
     old_value = subcfg[current_key]
     old_type = subschema[PROPERTIES_KEY_STR][current_key][TYPE_KEY_STR]
-    for type, value in types_and_values:
+    for value_type, value in types_and_values:
         if old_type != subschema[PROPERTIES_KEY_STR][current_key][TYPE_KEY_STR]:
-            subschema[PROPERTIES_KEY_STR][current_key][TYPE_KEY_STR] = type
+            subschema[PROPERTIES_KEY_STR][current_key][TYPE_KEY_STR] = value_type
             subcfg[current_key] = value
             with pytest.raises(jsonschema.exceptions.ValidationError) as exc_info:
                 jsonschema.validate(instance=cfg, schema=schema)
