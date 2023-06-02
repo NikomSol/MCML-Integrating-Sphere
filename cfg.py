@@ -1,15 +1,15 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+from detector.cfg import DetectorCfg
 from direct_problem.cfg import DirectProblemCfg
 from source.cfg import SourceCfg
-from detector.cfg import DetectorCfg
 
 
 @dataclass
 class Cfg:
-    direct_problem: DirectProblemCfg = DirectProblemCfg()
-    source: SourceCfg = SourceCfg()
-    detector: DetectorCfg = DetectorCfg()
+    direct_problem: DirectProblemCfg = field(default_factory=lambda: DirectProblemCfg())
+    source: SourceCfg = field(default_factory=lambda: SourceCfg())
+    detector: DetectorCfg = field(default_factory=lambda: DetectorCfg())
 
     def validate(self):
         self.direct_problem.validate()
