@@ -47,12 +47,13 @@ def test_classic_source(classic_cfg, classic_source):
 
     assert not np.array_equal(func_generator(),
                               func_generator())
+    assert np.array_equal(np.zeros((3, 3)), np.zeros((3, 3)))
 
-    assert np.array_equal(func_generator()[2:],
-                          np.array([0, 0, 0, 1, 1, -1, 0]))
+    assert np.array_equal(func_generator()[1:],
+                          np.array([[0, 0, 1], [1, -1, 0]]))
 
     def norm_func(_):
-        return np.linalg.norm(func_generator()[:2])
+        return np.linalg.norm(func_generator()[0, :2])
 
     N = 100
     assert sum(map(norm_func, range(N))) < 2 * N * classic_cfg.beam_diameter
