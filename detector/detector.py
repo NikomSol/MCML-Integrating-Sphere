@@ -7,6 +7,7 @@ from .measurement import Measurement
 from .probe import Probe
 
 
+# TODO class for each detector type
 class Detector:
     def __init__(self, cfg: DetectorCfg):
         self.cfg = cfg

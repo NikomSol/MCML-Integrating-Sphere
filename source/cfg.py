@@ -14,6 +14,7 @@ class SourceCfg:
     angular_distribution: AngularDistribution = AngularDistribution.collimated
     beam_center: np.ndarray = field(default_factory=lambda: np.array([0, 0, 0]))
     beam_diameter: float = 1.0
+    # TODO None default
 
     def validate(self):
         if not self.dimension:

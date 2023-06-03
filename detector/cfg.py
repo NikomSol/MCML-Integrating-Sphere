@@ -9,6 +9,7 @@ class DetectorCfg:
     measurement: Measurement = Measurement.FIS
     probe: Probe = Probe.IS_Ideal
     collimated_cosine: float = 0.99
+    # TODO None default
 
     def validate(self) -> None:
         if not self.measurement:

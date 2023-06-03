@@ -7,7 +7,7 @@ from .material import Material
 
 @dataclass
 class Layer:
-    material: Material = Material.scattering
+    material: Material = None
     mu_a: float = None
     mu_s: float = None
     g: float = None

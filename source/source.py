@@ -8,6 +8,7 @@ from .dimention import Dimension
 from .spatial_distribution import SpatialDistribution
 
 
+# TODO class for each source type
 class Source:
     def __init__(self, cfg: SourceCfg, sample: Sample):
         self.cfg = cfg
