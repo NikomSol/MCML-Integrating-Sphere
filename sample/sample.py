@@ -6,9 +6,13 @@ from .layer import Layer
 
 class Sample:
     def __init__(self, layers: list[Layer]):
+        self.layers = layers
+        if layers == []:
+            self.boundaries_list = []
+            return
+
         for i in range(len(layers) - 1):
             assert layers[i].end == layers[i + 1].start
-        self.layers = layers
         self.boundaries_list = self.calc_boundaries_list()
 
     def calc_boundaries_list(self):
@@ -21,11 +25,8 @@ class Sample:
 
         @njit(fastmath=True)
         def layer_index(z):
-            # TODO: I had to comment this out as it raises 'NumbaExperimentalFeatureWarning:
-            #  Use of isinstance() detected. This is an experimental feature.'
-            # assert isinstance(z, float)
             for i, bound in enumerate(boundaries_list):
-                if z < bound:
+                if z <= bound:
                     return i - 1
             return -2
 

@@ -27,7 +27,7 @@ class Source:
             p[3], p[4], p[5] = angular_distribution()
 
             p[6] = 1
-            p[7] = layer_index(p[:2])
+            p[7] = layer_index(p[2])
 
             return p
 
