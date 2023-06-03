@@ -21,9 +21,6 @@ class Layer:
 
         @njit(fastmath=True)
         def is_inside(z):
-            if start < z < end:
-                return True
-            else:
-                return False
+            return bool(start < z < end)
 
         return is_inside

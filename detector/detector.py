@@ -48,8 +48,7 @@ class Detector:
             if p_term[2, 0] == 0:
                 _storage[1] += p_gen[2, 0]
                 return _storage
-            else:
-                raise ValueError('Photon ending with non-zero mass and without leaving medium')
+            raise ValueError('Photon ending with non-zero mass and without leaving medium')
 
         return save_ending
 
