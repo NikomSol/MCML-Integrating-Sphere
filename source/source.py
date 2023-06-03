@@ -1,7 +1,11 @@
 import numpy as np
 from numba import njit
-from cfg import SourceCfg, Dimension, SpatialDistribution, AngularDistribution
-from sample.sample import Sample, Layer
+
+from sample import Sample
+from .angular_distribution import AngularDistribution
+from .cfg import SourceCfg
+from .dimention import Dimension
+from .spatial_distribution import SpatialDistribution
 
 
 class Source:
@@ -26,6 +30,7 @@ class Source:
             p[7] = layer_index(p[:2])
 
             return p
+
         return generator
 
     # spatial_distribution block
@@ -36,7 +41,7 @@ class Source:
         if mode_dimension is Dimension.surface:
             if mode_spatial_distribution is SpatialDistribution.gauss:
                 spatial_distribution = self.get_func_surface_gauss()
-            elif mode_spatial_distribution is SpatialDistribution.cyrcle:
+            elif mode_spatial_distribution is SpatialDistribution.circle:
                 raise NotImplementedError()
         else:
             raise NotImplementedError()
@@ -47,13 +52,14 @@ class Source:
         w = self.cfg.beam_diameter
 
         @njit(fastmath=True)
-        def suface_gauss():
+        def surface_gauss():
             r0 = np.random.rand()
             r1 = np.random.rand()
             ph = 2 * np.pi * r0
             radius = w * np.sqrt(-np.log(r1))
             return x0 + np.cos(ph) * radius, y0 + np.sin(ph) * radius, z0
-        return suface_gauss
+
+        return surface_gauss
 
     # angular_distribution block
     def get_func_angular_distribution(self):
@@ -72,7 +78,7 @@ class Source:
     def get_func_surface_collimated(self):
 
         @njit(fastmath=True)
-        def suface_collimated():
+        def surface_collimated():
             return 0, 0, 1
 
-        return suface_collimated
+        return surface_collimated
