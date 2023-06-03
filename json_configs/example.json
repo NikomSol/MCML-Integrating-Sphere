@@ -1,0 +1,6 @@
+{
+  "engine" : {
+    "threads": 1,
+    "photons": 1
+  }
+}
