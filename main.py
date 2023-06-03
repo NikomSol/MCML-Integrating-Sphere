@@ -24,10 +24,5 @@ sample = Sample([
           mu_a=1., mu_s=1., g=0.9, n=1.5)
 ])
 
-layer_index = sample.get_func_layer_index()
-assert layer_index(1.5) == 1
-assert layer_index(0.5) == 0
-assert layer_index(2.5) == -2
-assert layer_index(-1.) == -1
 
 source = Source(cfg.source, sample)

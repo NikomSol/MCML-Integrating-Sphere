@@ -21,13 +21,14 @@ class Source:
 
         @njit(fastmath=True)
         def generator():
-            p = np.zeros(8)
+            p = np.zeros(9)
 
             p[0], p[1], p[2] = spatial_distribution()
             p[3], p[4], p[5] = angular_distribution()
 
             p[6] = 1
             p[7] = layer_index(p[2])
+            p[8] = 0
 
             return p
 
