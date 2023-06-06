@@ -9,16 +9,22 @@ class Sample:
         self.layers = layers
         if layers == []:
             self.boundaries_list = []
+            self.g_table = []
+            self.mu_a_table = []
+            self.mu_s_table = []
+            self.n_table = []
             return
 
         for i in range(len(layers) - 1):
             assert layers[i].end == layers[i + 1].start
-        self.boundaries_list = self.calc_boundaries_list()
+
+        self.calc_boundaries_list()
+        self.calc_property_tables()
 
     def calc_boundaries_list(self):
         layers = self.layers
         boundaries_list = np.array([layer.start for layer in layers])
-        return np.append(boundaries_list, layers[-1].end)
+        self.boundaries_list = np.append(boundaries_list, layers[-1].end)
 
     def get_func_layer_index(self):
         boundaries_list = self.boundaries_list
@@ -31,3 +37,22 @@ class Sample:
             return -2
 
         return layer_index
+
+    def calc_property_tables(self):
+        layers = self.layers
+        n = len(layers)
+        g_table = np.zeros(n)
+        mu_a_table = np.zeros(n)
+        mu_s_table = np.zeros(n)
+        n_table = np.zeros(n)
+
+        for i, layer in enumerate(layers):
+            g_table[i] = layer.g
+            mu_a_table[i] = layer.mu_a
+            mu_s_table[i] = layer.mu_s
+            n_table[i] = layer.n
+
+        self.g_table = g_table
+        self.mu_a_table = mu_a_table
+        self.mu_s_table = mu_s_table
+        self.n_table = n_table

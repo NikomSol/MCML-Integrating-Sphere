@@ -16,6 +16,7 @@ def empty_sample():
 
 def test_empty_sample(empty_sample):
     assert empty_sample.boundaries_list == []
+    assert empty_sample.g_table == []
 
 
 @pytest.fixture
@@ -48,6 +49,8 @@ def classic_sample():
 def test_classic_sample(classic_sample):
     assert np.array_equal(classic_sample.boundaries_list,
                           np.array([0, 1, 2, 3]))
+    assert np.array_equal(classic_sample.g_table,
+                          np.array([0.9, 0.9, 0.9]))
 
 
 def test_layer_index(classic_sample):
