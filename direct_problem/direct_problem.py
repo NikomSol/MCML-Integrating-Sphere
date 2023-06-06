@@ -68,7 +68,7 @@ class DirectProblem:
         z_end_table = sample.boundaries_list[1:]
         z_start_table = sample.boundaries_list[:-1]
         mu_a_table = sample.mu_a_table
-        mu_s_table = self.sample.mu_s_table
+        mu_s_table = sample.mu_s_table
 
         reflection = self.get_func_reflection()
 
@@ -154,7 +154,7 @@ class DirectProblem:
             cx0 = p[1, 0]
             cy0 = p[1, 1]
             cz0 = p[1, 2]
-            if cz0 != 1. and cz0 != -1.:
+            if cz0 not in [-1., 1.]:
                 cx = (sin_th * (cx0 * cz0 * cos_ph - cy0 * sin_ph)) / (np.sqrt(1 - cz0 ** 2)) + cx0 * cos_th
                 cy = (sin_th * (cy0 * cz0 * cos_ph + cx0 * sin_ph)) / (np.sqrt(1 - cz0 ** 2)) + cy0 * cos_th
                 cz = -(np.sqrt(1 - cz0 ** 2)) * sin_th * cos_ph + cz0 * cos_th
