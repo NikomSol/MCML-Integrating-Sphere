@@ -29,9 +29,10 @@ class DirectProblem:
         term = self.get_func_term()
         turn = self.get_func_turn()
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def trace():
             storage = get_storage()
+            # FIXME Same start position for every photon
             p_gen = generate()  # Save start photon parameters
             p_turn = p_gen * 1.  # First cycle photon parameters
             for _ in range(10 ** 3):
@@ -46,7 +47,13 @@ class DirectProblem:
                     break
 
                 p_turn = turn(p_term)
+                print(storage)
                 storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
+                print(p_gen)
+                print(p_move)
+                print(p_term)
+                print(p_turn)
+                print(storage)
 
             storage = save_ending(p_gen, p_move, p_term, p_turn, storage)
             return storage
@@ -56,7 +63,7 @@ class DirectProblem:
     def solve(self):
         N = self.cfg.N
         trace = self.get_func_trace()
-        storage = self.detector.get_storage()
+        storage = self.detector.get_func_get_storage()()
 
         for _ in range(N):
             storage += trace()
@@ -72,11 +79,13 @@ class DirectProblem:
 
         reflection = self.get_func_reflection()
 
-        @njit(fastmath=True)
+        l_rand_tol = 1e-5  # Минимальное значение l_rand
+
+        # TODO unkommit @njit(fastmath=True)
         def move(old_p):
             # Считаем, что Sum(l*mu_t)=-log(x)=l_rand, и при переходе через границу
             # убавляем l_rand в соответсвии с пройденным путем
-            l_rand_tol = 1e-5  # Минимальное значение l_rand
+
             p = old_p * 1.
             # Создание случайной безразмерной величины длины
             l_rand = -np.log(np.random.random(1))[0]
@@ -84,7 +93,7 @@ class DirectProblem:
 
                 # Определяем текущие границы и свойства
                 layer_index = int(p[2, 1])
-
+                # FIXME layer index -1 and -2 for air is bad idea
                 z_start = z_start_table[layer_index]
                 z_end = z_end_table[layer_index]
 
@@ -196,7 +205,7 @@ class DirectProblem:
         n_table = self.sample.n_table
         R_frenel = self.get_func_R_frenel()
 
-        @njit(fastmath=True)
+        # TODO unkommit @njit(fastmath=True)
         def reflection(old_p):
             p = old_p * 1.
             layer_number = len(n_table)
@@ -222,7 +231,8 @@ class DirectProblem:
             else:
                 cz = np.sqrt(1 - (n1 / n2) ** 2 * (1 - cz ** 2)) * np.sign(cz)
                 p[2, 1] = buf
-
+            
+            p[1, 2] = cz
             return p
 
         return reflection
