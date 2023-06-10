@@ -95,7 +95,7 @@ def test_detector_ALL_save_out_medium_with_mass(detector_ALL):
     p_turn = np.ones((3, 3))
 
     # photon out
-    p_move[2, 1] = -1
+    p_move[2, 1] = np.NINF
     p_move[2, 0] = 0.3
 
     storage = get_storage()

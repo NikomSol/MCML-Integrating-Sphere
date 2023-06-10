@@ -39,7 +39,7 @@ class DirectProblem:
                 p_move = move(p_turn)
 
                 # Check leave calc area
-                if (p_move[2, 1] == -1 or p_move[2, 1] == -2):
+                if np.isinf(p_move[2, 1]):
                     break
                 # Check small weight
                 p_term = term(p_move)
@@ -87,13 +87,30 @@ class DirectProblem:
             # убавляем l_rand в соответсвии с пройденным путем
 
             p = old_p * 1.
+
+            # Проверка отражения при входе в среду
+            if np.isinf(p[2, 1]):
+                if np.isneginf(p[2, 1]):
+                    l_part = (z_start_table[0] - p[0, 2]) / p[1, 2]
+                else:
+                    l_part = (z_end_table[-1] - p[0, 2]) / p[1, 2]
+
+                p[0, 0] = p[0, 0] + l_part * p[1, 0]
+                p[0, 1] = p[0, 1] + l_part * p[1, 1]
+                p[0, 2] = p[0, 2] + l_part * p[1, 2]
+
+                p = reflection(p)
+
+                if np.isinf(p[2, 1]):
+                    return p
+
             # Создание случайной безразмерной величины длины
             l_rand = -np.log(np.random.random(1))[0]
             while l_rand > l_rand_tol:
 
                 # Определяем текущие границы и свойства
                 layer_index = int(p[2, 1])
-                # FIXME layer index -1 and -2 for air is bad idea
+
                 z_start = z_start_table[layer_index]
                 z_end = z_end_table[layer_index]
 
@@ -135,10 +152,8 @@ class DirectProblem:
 
                 # Проверка отражения
                 p = reflection(p)
-                if p[2, 1] == -1 or p[2, 1] == -2:
-                    break
-
-            return p
+                if np.isinf(p[2, 1]):
+                    return p
 
         return move
 
@@ -208,36 +223,43 @@ class DirectProblem:
         # TODO unkommit @njit(fastmath=True)
         def reflection(old_p):
             p = old_p * 1.
+            layer_index = p[2, 1]
             layer_number = len(n_table)
-            layer_index = int(p[2, 1])
             cz = p[1, 2]
-            n1 = n_table[layer_index]
 
-            if (layer_index == layer_number - 1) and (cz > 0):
-                n2 = 1
-                buf = -2
-            elif (layer_index != layer_number - 1) and (cz > 0):
-                n2 = n_table[layer_index + 1]
-                buf = layer_index + 1
-            elif (layer_index == 0) and (cz < 0):
-                n2 = 1
-                buf = -1
+            if np.isneginf(layer_index):
+                next_layer_index = 0
+                n1 = 1
+                n2 = n_table[next_layer_index]
+            elif np.isposinf(layer_index):
+                next_layer_index = layer_number - 1
+                n1 = 1
+                n2 = n_table[next_layer_index]
             else:
-                n2 = n_table[layer_index - 1]
-                buf = layer_index - 1
+                layer_index = int(layer_index)
+                n1 = n_table[layer_index]
+                if layer_index == 0 and cz < 0:
+                    next_layer_index = np.NINF
+                    n2 = 1
+                elif layer_index == layer_number - 1 and cz > 0:
+                    next_layer_index = np.PINF
+                    n2 = 1
+                else:
+                    next_layer_index = int(layer_index + np.sign(cz))
+                    n2 = n_table[next_layer_index]
 
             if np.random.rand() < R_frenel(np.arccos(cz), n1, n2):
-                cz = -cz
+                p[1, 2] = -cz
             else:
-                cz = np.sqrt(1 - (n1 / n2) ** 2 * (1 - cz ** 2)) * np.sign(cz)
-                p[2, 1] = buf
-            
-            p[1, 2] = cz
+                p[1, 2] = np.sqrt(1 - (n1 / n2) ** 2 * (1 - cz ** 2)) * np.sign(cz)
+                p[2, 1] = next_layer_index
+
             return p
 
         return reflection
 
     def get_func_R_frenel(self):
+
         @njit(fastmath=True)
         def R_frenel(th, n1, n2):
             if th > np.pi / 2:

@@ -44,4 +44,10 @@ source = Source(cfg.source, sample)
 direct_problem = DirectProblem(cfg.direct_problem,
                                sample, source, detector)
 # print('OK')
-print(direct_problem.solve())
+# print(direct_problem.solve())
+
+# FIXME bad reflection, only cz change - uncorrect
+p = np.array([[0, 0, 0],
+              [0, 0.6, 0.8],
+              [10 ** -5, np.NINF, 0]])
+print(direct_problem.get_func_reflection()(p))

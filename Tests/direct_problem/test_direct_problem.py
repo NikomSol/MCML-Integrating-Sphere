@@ -73,42 +73,108 @@ def direct_problem(direct_problem_cfg, classic_sample, classic_source, detector_
     return DirectProblem(direct_problem_cfg,
                          classic_sample, classic_source, detector_ALL)
 
+@pytest.fixture
+def base_p():
+    return np.array([[0, 0, 1.5],
+                     [0, 0.6, 0.8],
+                     [10 ** -5, 1, 0]])
 
-def test_direct_problem_get_funcs(direct_problem):
-    p1 = np.array([[0, 0, 1.5],
-                  [0, 0.6, 0.8],
-                  [10 ** -5, 1, 0]])
 
-    p2 = p1 * 1.
-    p2[2, 0] = 0
-
-    p5 = p1 * 1.
-    p5[2, 0] = 10 * p5[2, 0]
+def test_direct_problem_get_func_term(direct_problem, base_p):
 
     term = direct_problem.get_func_term()
-    p_term = term(p1)
-    assert np.array_equal(p_term, p2) or np.array_equal(p_term, p5)
+
+    p2 = base_p * 1.
+    p2[2, 0] = 0
+
+    p3 = base_p * 1.
+    p3[2, 0] = 10 * p3[2, 0]
+
+    p_term = term(base_p)
+    assert np.array_equal(p_term, p2) or np.array_equal(p_term, p3)
+
+
+def test_direct_problem_get_func_turn(direct_problem, base_p):
 
     turn = direct_problem.get_func_turn()
-    p_turn = turn(p1)
-    assert np.array_equal(p_turn[0], p1[0])
-    assert np.array_equal(p_turn[2], p1[2])
-    assert not np.array_equal(p_turn[1], p1[1])
+
+    p_turn = turn(base_p)
+    assert np.array_equal(p_turn[0], base_p[0])
+    assert np.array_equal(p_turn[2], base_p[2])
+    assert not np.array_equal(p_turn[1], base_p[1])
+
+
+def test_direct_problem_get_func_reflection(direct_problem, base_p):
 
     reflection = direct_problem.get_func_reflection()
-    p3 = p1 * 1.
-    p3[1, 2] = -p1[1, 2]
-    p4 = p1 * 1.
-    p4[2, 1] = p1[2, 1] + 1
-    p_refl = reflection(p1)
-    assert np.array_equal(p_refl, p3) or np.array_equal(p_refl, p4)
+
+    # layer - layer
+    p2 = base_p * 1.
+    p2[1, 2] = - p2[1, 2]
+    p3 = base_p * 1.
+    p3[2, 1] = p3[2, 1] + 1
+
+    p_refl = reflection(base_p)
+    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+    
+    # down -> layer 
+    start_p = np.array([[0, 0, 0],
+                        [0, 0.6, 0.8],
+                        [10 ** -5, np.NINF, 0]])
+    p2 = start_p * 1.
+    p2[1, 2] = - p2[1, 2]
+    p3 = start_p * 1.
+    p3[2, 1] = 0
+
+    p_refl = reflection(base_p)
+    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+
+    # layer -> down 
+    start_p = np.array([[0, 0, 0],
+                        [0, 0.6, -0.8],
+                        [10 ** -5, 0, 0.5]])
+    p2 = start_p * 1.
+    p2[1, 2] = - p2[1, 2]
+    p3 = start_p * 1.
+    p3[2, 1] = np.NINF
+
+    p_refl = reflection(base_p)
+    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+
+    # top -> layer
+    start_p = np.array([[0, 0, 0],
+                        [0, 0.6, -0.8],
+                        [10 ** -5, np.PINF, 4]])
+    p2 = start_p * 1.
+    p2[1, 2] = - p2[1, 2]
+    p3 = start_p * 1.
+    p3[2, 1] = len(direct_problem.sample.layers) - 1
+
+    p_refl = reflection(base_p)
+    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+
+    # layer -> top 
+    start_p = np.array([[0, 0, 0],
+                        [0, 0.6, 0.8],
+                        [10 ** -5, len(direct_problem.sample.layers) - 1, 2.5]])
+    p2 = start_p * 1.
+    p2[1, 2] = - p2[1, 2]
+    p3 = start_p * 1.
+    p3[2, 1] = np.PINF
+
+    p_refl = reflection(base_p)
+    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+
+
+def test_direct_problem_get_func_move(direct_problem, base_p):
 
     move = direct_problem.get_func_move()
-    p_move = move(p1)
-    assert not np.array_equal(p_move[0], p1[0])
-    assert np.array_equal(p_move[1, :-1], p1[1, :-1])
-    assert (p_move[1, 2] == p1[1, 2]) or (p_move[1, 2] == -p1[1, 2])
-    assert p_move[2, 0] != p1[2, 0]
+
+    p_move = move(base_p)
+    assert not np.array_equal(p_move[0], base_p[0])
+    assert np.array_equal(p_move[1, :-1], base_p[1, :-1])
+    assert (p_move[1, 2] == base_p[1, 2]) or (p_move[1, 2] == -base_p[1, 2])
+    assert p_move[2, 0] != base_p[2, 0]
 
 
 def test_direct_problem_get_trace(direct_problem):

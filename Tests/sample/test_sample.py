@@ -55,12 +55,12 @@ def test_classic_sample(classic_sample):
 
 def test_layer_index(classic_sample):
     layer_index = classic_sample.get_func_layer_index()
-    assert layer_index(-1.) == -1
-    assert layer_index(0) == -1
+    assert np.isneginf(layer_index(-1.))
+    assert np.isneginf(layer_index(0))
     assert layer_index(0.5) == 0
     assert layer_index(1) == 0
     assert layer_index(1.5) == 1
     assert layer_index(2) == 1
     assert layer_index(2.5) == 2
     assert layer_index(3) == 2
-    assert layer_index(3.5) == -2
+    assert np.isposinf(layer_index(3.5))

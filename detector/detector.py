@@ -42,7 +42,7 @@ class Detector:
         @njit(fastmath=True)
         def save_ending(p_gen, p_move, p_term, p_turn, storage):
             _storage = storage * 1.
-            if p_move[2, 1] in {-1, -2}:
+            if np.isinf(p_move[2, 1]):
                 _storage[0] += p_move[2, 0]
                 _storage[1] += p_gen[2, 0] - p_move[2, 0]
                 return _storage

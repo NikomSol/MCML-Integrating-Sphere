@@ -31,10 +31,12 @@ class Sample:
 
         @njit(fastmath=True)
         def layer_index(z):
-            for i, bound in enumerate(boundaries_list):
+            if z <= boundaries_list[0]:
+                return np.NINF
+            for i, bound in enumerate(boundaries_list[1:]):
                 if z <= bound:
-                    return i - 1
-            return -2
+                    return i
+            return np.PINF
 
         return layer_index
 
