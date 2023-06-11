@@ -3,5 +3,6 @@ from enum import Enum, auto
 
 class Measurement(Enum):
     ALL = auto()
-    FIS = auto()
-    MIS = auto()
+    CollimatedDiffuse = auto()
+    MIS_Ideal = auto()
+    MIS_Thorlabs = auto()

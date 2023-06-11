@@ -25,7 +25,7 @@ def test_empty_cfg(empty_cfg):
 @pytest.fixture
 def cfg():
     return DetectorCfg(
-        measurement=Measurement.FIS,
+        measurement=Measurement.MIS_Thorlabs,
         probe=Probe.IS_Ideal,
         collimated_cosine=0.99,
     )

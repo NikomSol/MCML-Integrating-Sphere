@@ -2,11 +2,6 @@ import numpy as np
 from numba import njit
 
 
-# from .cfg import DetectorCfg
-from .measurement import Measurement
-from .probe import Probe
-
-
 class Detector:
     pass
 
@@ -29,8 +24,42 @@ class DetectorAll(Detector):
 
             if np.isposinf(p_move[2, 1]):
                 _storage[0] += p_move[2, 0]
-            if np.isneginf(p_move[2, 1]):
+            elif np.isneginf(p_move[2, 1]):
                 _storage[1] += p_move[2, 0]
+
+            return _storage
+
+        return save_ending
+
+
+class DetectorCollimatedDiffuse(Detector):
+    collimated_cosine = 0.99
+
+    def get_func_get_storage(self):
+
+        @njit(fastmath=True)
+        def get_storage():
+            return np.zeros(4)
+
+        return get_storage
+
+    def get_func_save_ending(self):
+        collimated_cosine = self.collimated_cosine
+
+        @njit(fastmath=True)
+        def save_ending(p_move, storage):
+            _storage = storage * 1.
+
+            if np.isposinf(p_move[2, 1]):
+                if p_move([1, 2]) > collimated_cosine:
+                    _storage[0] += p_move[2, 0]
+                else:
+                    _storage[1] += p_move[2, 0]
+            elif np.isneginf(p_move[2, 1]):
+                if p_move([1, 2]) > -collimated_cosine:
+                    _storage[2] += p_move[2, 0]
+                else:
+                    _storage[3] += p_move[2, 0]
 
             return _storage
 
