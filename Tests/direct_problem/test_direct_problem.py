@@ -191,7 +191,6 @@ def test_direct_problem_get_func_move(direct_problem, base_p):
     assert np.equal(p_move[2, 1], direct_problem.sample.get_func_layer_index()(p_move[0, 2]))
 
 
-
 def test_direct_problem_get_trace(direct_problem):
     trace = direct_problem.get_func_trace()
     storage = trace()

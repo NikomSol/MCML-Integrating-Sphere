@@ -29,7 +29,7 @@ class DirectProblem:
         term = self.get_func_term()
         turn = self.get_func_turn()
 
-        # @njit(fastmath=True)
+        @njit(fastmath=True)
         def trace():
             storage = get_storage()
             # FIXME Same start position for every photon
@@ -47,15 +47,19 @@ class DirectProblem:
                     break
 
                 p_turn = turn(p_term)
-                print(storage)
                 storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
-                print(p_gen)
-                print(p_move)
-                print(p_term)
-                print(p_turn)
-                print(storage)
+                # print(_)
+                # print(p_gen)
+                # print(p_move)
+                # print(p_term)
+                # print(p_turn)
 
             storage = save_ending(p_gen, p_move, p_term, p_turn, storage)
+            # print(storage)
+            # print(p_gen)
+            # print(p_move)
+            # print(p_term)
+            # print(p_turn)
             return storage
 
         return trace
@@ -81,7 +85,7 @@ class DirectProblem:
 
         l_rand_tol = 1e-5  # Минимальное значение l_rand
 
-        # TODO unkommit @njit(fastmath=True)
+        @njit(fastmath=True)
         def move(old_p):
             # Считаем, что Sum(l*mu_t)=-log(x)=l_rand, и при переходе через границу
             # убавляем l_rand в соответсвии с пройденным путем
@@ -222,7 +226,7 @@ class DirectProblem:
         n_table = self.sample.n_table
         R_frenel = self.get_func_R_frenel()
 
-        # TODO unkommit @njit(fastmath=True)
+        @njit(fastmath=True)
         def reflection(old_p):
             p = old_p * 1.
             layer_index = p[2, 1]

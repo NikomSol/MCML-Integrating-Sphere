@@ -4,6 +4,8 @@ from detector import Detector, DetectorCfg, Measurement
 from sample import Sample, Layer, Material
 from direct_problem import DirectProblem, DirectProblemCfg
 
+from support_functions import timeit, KW
+
 import numpy as np
 
 
@@ -15,7 +17,7 @@ source_cfg = SourceCfg(dimension=Dimension.surface,
 
 detector_cfg = DetectorCfg(measurement=Measurement.ALL)
 
-direct_problem_cfg = DirectProblemCfg(N=3,
+direct_problem_cfg = DirectProblemCfg(N=100000,
                                       threads=1)
 
 cfg = Cfg(
@@ -43,12 +45,7 @@ source = Source(cfg.source, sample)
 
 direct_problem = DirectProblem(cfg.direct_problem,
                                sample, source, detector)
-# print('OK')
-# print(direct_problem.solve())
 
 
-p = np.array([[0, 0, 0],
-              [0, 0.6, 0.8],
-              [10 ** -5, np.NINF, 0]])
-# print(direct_problem.get_func_reflection()(p))
-print(direct_problem.get_func_move()(p))
+print(timeit(direct_problem.solve)())
+print(KW)
