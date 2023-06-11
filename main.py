@@ -23,8 +23,7 @@ source_cfg = SourceCfg(dimension=Dimension.surface,
                        beam_center=np.array([0, 0, 0]),
                        beam_diameter=float(1))
 
-detector_cfg = DetectorCfg(measurement=Measurement.MIS_Ideal,
-                           positions=np.linspace(0, 200, 10))
+detector_cfg = DetectorCfg(measurement=Measurement.CollimatedDiffuse)
 
 direct_problem_cfg = DirectProblemCfg(N=100000,
                                       threads=1)
@@ -56,5 +55,7 @@ direct_problem = DirectProblem(cfg.direct_problem,
                                sample, source, detector)
 
 # direct_problem.solve()
-print(timeit(direct_problem.solve)())
+result = timeit(direct_problem.solve)()
+print(result)
+print(np.sum(result[0]) + result[1])
 print(KW)

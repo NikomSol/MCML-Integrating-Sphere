@@ -21,10 +21,11 @@ class DirectProblem:
 
         generate = source.get_func_generator()
 
-        # TODO save absorbtion
-        # save_progress = detector.get_func_save_progress()
         save_ending = detector.get_func_save_ending()
         get_storage = detector.get_func_get_storage()
+
+        save_absorbtion = self.get_func_save_absorbtion()
+        get_storage_absorbtion = self.get_func_get_storage_absorbtion()
 
         move = self.get_func_move()
         term = self.get_func_term()
@@ -33,6 +34,8 @@ class DirectProblem:
         @njit(fastmath=True)
         def trace():
             storage = get_storage()
+            storage_absorbtion = get_storage_absorbtion()
+
             p_gen = generate()  # Save start photon parameters
             p_turn = p_gen * 1.  # First cycle photon parameters
             for _ in range(10 ** 3):
@@ -47,8 +50,6 @@ class DirectProblem:
                     break
 
                 p_turn = turn(p_term)
-                # TODO save absorbtion
-                # storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
 
                 # print(_)
                 # print(p_gen)
@@ -57,12 +58,13 @@ class DirectProblem:
                 # print(p_turn)
 
             storage = save_ending(p_move, storage)
+            storage_absorbtion = save_absorbtion(p_gen, p_move, p_term, storage_absorbtion)
             # print(storage)
             # print(p_gen)
             # print(p_move)
             # print(p_term)
             # print(p_turn)
-            return storage
+            return storage, storage_absorbtion
 
         return trace
 
@@ -70,11 +72,14 @@ class DirectProblem:
         N = self.cfg.N
         trace = self.get_func_trace()
         storage = self.detector.get_func_get_storage()()
+        storage_absorbtion = self.get_func_get_storage_absorbtion()()
 
         for _ in range(N):
-            storage += trace()
+            _storage, _storage_absorbtion = trace()
+            storage += _storage
+            storage_absorbtion += _storage_absorbtion
 
-        return storage
+        return storage, storage_absorbtion
 
     def get_func_move(self):
         sample = self.sample
@@ -302,3 +307,30 @@ class DirectProblem:
             return res
 
         return R_frenel
+
+    # Absorbtion saving
+    def get_func_get_storage_absorbtion(self):
+
+        @njit(fastmath=True)
+        def get_storage_absorbtion():
+            return 0
+
+        return get_storage_absorbtion
+
+    def get_func_save_absorbtion(self):
+
+        @njit(fastmath=True)
+        def save_absorbtion(p_gen, p_move, p_term, storage_absorbtion):
+            _storage = storage_absorbtion * 1.
+
+            if np.isinf(p_move[2, 1]):
+                _storage += p_gen[2, 0] - p_move[2, 0]
+            elif p_term[2, 0] == 0:
+                _storage += p_gen[2, 0]
+            else:
+                raise ValueError('Photon in sample with mass left trace cyrcle')
+            return _storage
+
+        return save_absorbtion
+        
+        return get_storage_absorbtion
