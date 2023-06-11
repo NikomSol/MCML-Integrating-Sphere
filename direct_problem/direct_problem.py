@@ -21,7 +21,8 @@ class DirectProblem:
 
         generate = source.get_func_generator()
 
-        save_progress = detector.get_func_save_progress()
+        # TODO save absorbtion
+        # save_progress = detector.get_func_save_progress()
         save_ending = detector.get_func_save_ending()
         get_storage = detector.get_func_get_storage()
 
@@ -32,7 +33,6 @@ class DirectProblem:
         @njit(fastmath=True)
         def trace():
             storage = get_storage()
-            # FIXME Same start position for every photon
             p_gen = generate()  # Save start photon parameters
             p_turn = p_gen * 1.  # First cycle photon parameters
             for _ in range(10 ** 3):
@@ -47,14 +47,16 @@ class DirectProblem:
                     break
 
                 p_turn = turn(p_term)
-                storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
+                # TODO save absorbtion
+                # storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
+
                 # print(_)
                 # print(p_gen)
                 # print(p_move)
                 # print(p_term)
                 # print(p_turn)
 
-            storage = save_ending(p_gen, p_move, p_term, p_turn, storage)
+            storage = save_ending(p_move, storage)
             # print(storage)
             # print(p_gen)
             # print(p_move)

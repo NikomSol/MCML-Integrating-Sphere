@@ -1,14 +1,18 @@
 from dataclasses import dataclass
+import numpy as np
 
 from .measurement import Measurement
 from .probe import Probe
+from .detector import Detector, DetectorAll, IntegratingSphereIdeal, IntegratingSphereThorlabs
 
 
 @dataclass
 class DetectorCfg:
+    # TODO restructuring Measurement/Probe
     measurement: Measurement = Measurement.FIS
     probe: Probe = Probe.IS_Ideal
     collimated_cosine: float = 0.99
+    positions: np.ndarray = np.linspace(0, 200, 10)
     # TODO None default
 
     def validate(self) -> None:
@@ -32,3 +36,14 @@ class DetectorCfg:
             raise ValueError('collimated_cosine is not of type float in DetectorCfg')
         if not (0 < self.collimated_cosine < 1):
             raise ValueError(f'collimated_cosine = {self.collimated_cosine} out of range (0, 1) in DetectorCfg')
+
+    def get_detector(self):
+        measurement = self.measurement
+        positions = self.positions
+
+        if measurement is Measurement.ALL:
+            return DetectorAll()
+        elif measurement is Measurement.MIS:
+            return IntegratingSphereIdeal(positions)
+
+        raise ValueError

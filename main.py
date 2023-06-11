@@ -1,6 +1,6 @@
 from cfg import Cfg
 from source import Source, SourceCfg, Dimension, SpatialDistribution, AngularDistribution
-from detector import Detector, DetectorCfg, Measurement
+from detector import Detector, DetectorAll, IntegratingSphereIdeal, IntegratingSphereThorlabs, DetectorCfg, Measurement
 from sample import Sample, Layer, Material
 from direct_problem import DirectProblem, DirectProblemCfg
 
@@ -15,7 +15,7 @@ source_cfg = SourceCfg(dimension=Dimension.surface,
                        beam_center=np.array([0, 0, 0]),
                        beam_diameter=float(1))
 
-detector_cfg = DetectorCfg(measurement=Measurement.ALL)
+detector_cfg = DetectorCfg(measurement=Measurement.MIS)
 
 direct_problem_cfg = DirectProblemCfg(N=100000,
                                       threads=1)
@@ -40,12 +40,12 @@ sample = Sample([
           mu_a=1., mu_s=1., g=0.9, n=1.4)
           ])
 
-detector = Detector(cfg.detector)
+detector = cfg.detector.get_detector()
 source = Source(cfg.source, sample)
 
 direct_problem = DirectProblem(cfg.direct_problem,
                                sample, source, detector)
 
-
+# direct_problem.solve()
 print(timeit(direct_problem.solve)())
 print(KW)
