@@ -5,15 +5,13 @@ sys.path.append(".")
 
 import pytest
 
-from detector import DetectorCfg, Measurement, Probe
+from detector import DetectorCfg, Measurement
 
 
 @pytest.fixture
 def empty_cfg():
     return DetectorCfg(
-        measurement=None,
-        probe=None,
-        collimated_cosine=None,
+        measurement=None
     )
 
 
@@ -25,9 +23,7 @@ def test_empty_cfg(empty_cfg):
 @pytest.fixture
 def cfg():
     return DetectorCfg(
-        measurement=Measurement.MIS_Thorlabs,
-        probe=Probe.IS_Ideal,
-        collimated_cosine=0.99,
+        measurement=Measurement.MIS_Thorlabs
     )
 
 
@@ -52,12 +48,6 @@ def test_cfg_with_wrong_measurement(cfg, value, error):
     with pytest.raises(ValueError) as exc_info:
         cfg.validate()
     assert str(exc_info.value) == error
-
-
-def test_cfg_all_probe(cfg):
-    for variant in Probe:
-        cfg.probe = variant
-        cfg.validate()
 
 
 @pytest.mark.parametrize(
