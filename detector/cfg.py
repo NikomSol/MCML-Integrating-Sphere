@@ -1,9 +1,9 @@
 from dataclasses import dataclass
+
 import numpy as np
 
+from .detector import DetectorAll, DetectorCollimatedDiffuse, IntegratingSphereIdeal, IntegratingSphereThorlabs
 from .measurement import Measurement
-from .detector import DetectorAll, DetectorCollimatedDiffuse
-from .detector import IntegratingSphereIdeal, IntegratingSphereThorlabs
 
 
 @dataclass
@@ -19,7 +19,7 @@ class DetectorCfg:
         if self.measurement not in Measurement:
             raise ValueError(f'measurement = {self.measurement} not available in DetectorCfg')
 
-        if (self.measurement is Measurement.MIS_Ideal or self.measurement is Measurement.MIS_Thorlabs):
+        if self.measurement is Measurement.MIS_Ideal or self.measurement is Measurement.MIS_Thorlabs:
             if not isinstance(self.positions, np.ndarray):
                 raise ValueError('positions is not of type np.ndarray in DetectorCfg')
             if not (0 < len(self.positions)):

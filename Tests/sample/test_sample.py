@@ -3,8 +3,8 @@ import sys
 # Well, you'll have to deal with that for a while
 sys.path.append(".")
 
-import pytest
 import numpy as np
+import pytest
 
 from sample import Sample, Layer, Material
 
@@ -21,9 +21,11 @@ def test_empty_sample(empty_sample):
 
 @pytest.fixture
 def scattering_sample():
-    return Sample([Layer(material=Material.scattering,
-                         start=0., end=1.,
-                         mu_a=1., mu_s=1., g=0.9, n=1.5)])
+    return Sample([
+        Layer(material=Material.scattering,
+              start=0., end=1.,
+              mu_a=1., mu_s=1., g=0.9, n=1.5)
+    ])
 
 
 def test_scattering_sample(scattering_sample):
@@ -43,7 +45,7 @@ def classic_sample():
         Layer(material=Material.transparent,
               start=2., end=3.,
               mu_a=1., mu_s=1., g=0.9, n=1.5)
-        ])
+    ])
 
 
 def test_classic_sample(classic_sample):

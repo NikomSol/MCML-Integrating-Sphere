@@ -156,4 +156,4 @@ class IntegratingSphereThorlabs(Detector):
     gain = 1
 
     def __init__(self, positions):
-        raise NotImplemented('class IntegratingSphereThorlabs')
+        raise NotImplementedError('class IntegratingSphereThorlabs')

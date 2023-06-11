@@ -7,7 +7,7 @@ from .layer import Layer
 class Sample:
     def __init__(self, layers: list[Layer]):
         self.layers = layers
-        if layers == []:
+        if not layers:
             self.boundaries_list = []
             self.g_table = []
             self.mu_a_table = []
