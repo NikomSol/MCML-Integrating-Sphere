@@ -46,7 +46,7 @@ direct_problem = DirectProblem(cfg.direct_problem,
 # print('OK')
 # print(direct_problem.solve())
 
-# FIXME bad reflection, only cz change - uncorrect
+
 p = np.array([[0, 0, 0],
               [0, 0.6, 0.8],
               [10 ** -5, np.NINF, 0]])
