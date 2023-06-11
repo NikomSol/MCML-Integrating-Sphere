@@ -1,5 +1,4 @@
 *.idea*
 *.ipynb_checkpoints*
 *__pycache__*
-*.vscode*
 clear_field.ipynb
