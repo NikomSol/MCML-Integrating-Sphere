@@ -28,14 +28,14 @@ cfg.validate()
 
 sample = Sample([
     Layer(material=Material.transparent,
-          start=0., end=1.,
-          mu_a=0.1, mu_s=1., g=0.9, n=1.5),
+          start=0., end=1.4,
+          mu_a=0.1, mu_s=1., g=0.9, n=1.),
     Layer(material=Material.scattering,
           start=1., end=2.,
           mu_a=1., mu_s=1., g=0.9, n=1.5),
     Layer(material=Material.transparent,
           start=2., end=3.,
-          mu_a=1., mu_s=1., g=0.9, n=1.5)
+          mu_a=1., mu_s=1., g=0.9, n=1.4)
           ])
 
 detector = Detector(cfg.detector)

@@ -22,13 +22,13 @@ def classic_sample():
     return Sample([
         Layer(material=Material.transparent,
               start=0., end=1.,
-              mu_a=0.1, mu_s=1., g=0.9, n=1.5),
+              mu_a=0.1, mu_s=1., g=0.9, n=1.4),
         Layer(material=Material.scattering,
               start=1., end=2.,
               mu_a=1., mu_s=1., g=0.9, n=1.5),
         Layer(material=Material.transparent,
               start=2., end=3.,
-              mu_a=1., mu_s=1., g=0.9, n=1.5)
+              mu_a=1., mu_s=1., g=0.9, n=1.4)
         ])
 
 
@@ -77,7 +77,7 @@ def direct_problem(direct_problem_cfg, classic_sample, classic_source, detector_
 def base_p():
     return np.array([[0, 0, 1.5],
                      [0, 0.6, 0.8],
-                     [10 ** -5, 1, 0]])
+                     [10 ** -5, 0, 0]])
 
 
 def test_direct_problem_get_func_term(direct_problem, base_p):
@@ -115,9 +115,12 @@ def test_direct_problem_get_func_reflection(direct_problem, base_p):
     p3[2, 1] = p3[2, 1] + 1
 
     p_refl = reflection(base_p)
-    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
-    
-    # down -> layer 
+    assert np.array_equal(p_refl, p2) or (np.array_equal(p_refl[0], p3[0]) and
+                                          np.array_equal(p_refl[2], p3[2]) and
+                                          not np.array_equal(p_refl[1], p3[1]))
+    assert np.abs(np.linalg.norm(p_refl[1]) - 1.) < 10 ** (-5)
+
+    # down -> layer
     start_p = np.array([[0, 0, 0],
                         [0, 0.6, 0.8],
                         [10 ** -5, np.NINF, 0]])
@@ -126,10 +129,13 @@ def test_direct_problem_get_func_reflection(direct_problem, base_p):
     p3 = start_p * 1.
     p3[2, 1] = 0
 
-    p_refl = reflection(base_p)
-    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+    p_refl = reflection(start_p)
+    assert np.array_equal(p_refl, p2) or (np.array_equal(p_refl[0], p3[0]) and
+                                          np.array_equal(p_refl[2], p3[2]) and
+                                          not np.array_equal(p_refl[1], p3[1]))
+    assert np.abs(np.linalg.norm(p_refl[1]) - 1.) < 10 ** (-5)
 
-    # layer -> down 
+    # layer -> down
     start_p = np.array([[0, 0, 0],
                         [0, 0.6, -0.8],
                         [10 ** -5, 0, 0.5]])
@@ -138,8 +144,11 @@ def test_direct_problem_get_func_reflection(direct_problem, base_p):
     p3 = start_p * 1.
     p3[2, 1] = np.NINF
 
-    p_refl = reflection(base_p)
-    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+    p_refl = reflection(start_p)
+    assert np.array_equal(p_refl, p2) or (np.array_equal(p_refl[0], p3[0]) and
+                                          np.array_equal(p_refl[2], p3[2]) and
+                                          not np.array_equal(p_refl[1], p3[1]))
+    assert np.abs(np.linalg.norm(p_refl[1]) - 1.) < 10 ** (-5)
 
     # top -> layer
     start_p = np.array([[0, 0, 0],
@@ -150,10 +159,13 @@ def test_direct_problem_get_func_reflection(direct_problem, base_p):
     p3 = start_p * 1.
     p3[2, 1] = len(direct_problem.sample.layers) - 1
 
-    p_refl = reflection(base_p)
-    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+    p_refl = reflection(start_p)
+    assert np.array_equal(p_refl, p2) or (np.array_equal(p_refl[0], p3[0]) and
+                                          np.array_equal(p_refl[2], p3[2]) and
+                                          not np.array_equal(p_refl[1], p3[1]))
+    assert np.abs(np.linalg.norm(p_refl[1]) - 1.) < 10 ** (-5)
 
-    # layer -> top 
+    # layer -> top
     start_p = np.array([[0, 0, 0],
                         [0, 0.6, 0.8],
                         [10 ** -5, len(direct_problem.sample.layers) - 1, 2.5]])
@@ -162,8 +174,11 @@ def test_direct_problem_get_func_reflection(direct_problem, base_p):
     p3 = start_p * 1.
     p3[2, 1] = np.PINF
 
-    p_refl = reflection(base_p)
-    assert np.array_equal(p_refl, p2) or np.array_equal(p_refl, p3)
+    p_refl = reflection(start_p)
+    assert np.array_equal(p_refl, p2) or (np.array_equal(p_refl[0], p3[0]) and
+                                          np.array_equal(p_refl[2], p3[2]) and
+                                          not np.array_equal(p_refl[1], p3[1]))
+    assert np.abs(np.linalg.norm(p_refl[1]) - 1.) < 10 ** (-5)
 
 
 def test_direct_problem_get_func_move(direct_problem, base_p):

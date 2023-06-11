@@ -257,7 +257,6 @@ class DirectProblem:
                 p[1, 2] = np.sqrt(1 - inv_n ** 2 * (1 - cz ** 2)) * np.sign(cz)
                 p[1, 0] = p[1, 0] * inv_n
                 p[1, 1] = p[1, 1] * inv_n
-                
                 p[2, 1] = next_layer_index
 
             return p
