@@ -186,10 +186,10 @@ def test_direct_problem_get_func_move(direct_problem, base_p):
     move = direct_problem.get_func_move()
 
     p_move = move(base_p)
-    assert not np.array_equal(p_move[0], base_p[0])
-    assert np.array_equal(p_move[1, :-1], base_p[1, :-1])
-    assert (p_move[1, 2] == base_p[1, 2]) or (p_move[1, 2] == -base_p[1, 2])
     assert p_move[2, 0] != base_p[2, 0]
+    assert np.abs(np.linalg.norm(p_move[1]) - 1.) < 10 ** (-5)
+    assert np.equal(p_move[2, 1], direct_problem.sample.get_func_layer_index()(p_move[0, 2]))
+
 
 
 def test_direct_problem_get_trace(direct_problem):

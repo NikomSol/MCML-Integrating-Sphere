@@ -153,7 +153,9 @@ class DirectProblem:
                 # Проверка отражения
                 p = reflection(p)
                 if np.isinf(p[2, 1]):
-                    return p
+                    break
+
+            return p
 
         return move
 
