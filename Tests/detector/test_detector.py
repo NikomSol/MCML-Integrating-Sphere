@@ -6,7 +6,7 @@ sys.path.append(".")
 import pytest
 import numpy as np
 
-from detector import DetectorCfg, Measurement, Probe
+from detector import DetectorCfg, Measurement
 from detector import Detector
 
 
@@ -23,7 +23,7 @@ def test_cfg_ALL(cfg_ALL):
 
 @pytest.fixture
 def detector_ALL(cfg_ALL):
-    return Detector(cfg_ALL)
+    return cfg_ALL.get_detector()
 
 
 def test_detector_ALL_storage(detector_ALL):
@@ -39,70 +39,55 @@ def test_detector_ALL_storage(detector_ALL):
 
 def test_detector_ALL_save_in_medium_with_mass(detector_ALL):
     get_storage = detector_ALL.get_func_get_storage()
-    save_progress = detector_ALL.get_func_save_progress_ALL()
     save_ending = detector_ALL.get_func_save_ending_ALL()
 
     # photon in medium with mass
-    p_gen = np.ones((3, 3))
     p_move = np.ones((3, 3))
-    p_term = np.ones((3, 3))
-    p_turn = np.ones((3, 3))
 
     storage = get_storage()
     assert np.array_equal(storage, np.zeros(2))
-
-    storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
+    storage = save_ending(p_move,storage)
     assert np.array_equal(storage, np.zeros(2))
-
-    with pytest.raises(ValueError) as exc_info:
-        storage = save_ending(p_gen, p_move, p_term, p_turn, storage)
-    assert str(exc_info.value) == 'Photon ending with non-zero mass and without leaving medium'
+   
 
 
 def test_detector_ALL_save_in_medium_without_mass(detector_ALL):
     get_storage = detector_ALL.get_func_get_storage()
-    save_progress = detector_ALL.get_func_save_progress_ALL()
     save_ending = detector_ALL.get_func_save_ending_ALL()
 
     # photon in medium with mass
-    p_gen = np.ones((3, 3))
     p_move = np.ones((3, 3))
-    p_term = np.ones((3, 3))
-    p_turn = np.ones((3, 3))
 
     # photon terminate
-    p_term[2, 0] = 0
+    p_move[2, 0] = 0
 
     storage = get_storage()
     assert np.array_equal(storage, np.zeros(2))
-
-    storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
+    storage = save_ending(p_move, storage)
     assert np.array_equal(storage, np.zeros(2))
-
-    storage = save_ending(p_gen, p_move, p_term, p_turn, storage)
-    assert np.array_equal(storage, np.array([0, 1]))
 
 
 def test_detector_ALL_save_out_medium_with_mass(detector_ALL):
     get_storage = detector_ALL.get_func_get_storage()
-    save_progress = detector_ALL.get_func_save_progress_ALL()
     save_ending = detector_ALL.get_func_save_ending_ALL()
 
     # photon in medium with mass
-    p_gen = np.ones((3, 3))
     p_move = np.ones((3, 3))
-    p_term = np.ones((3, 3))
-    p_turn = np.ones((3, 3))
 
-    # photon out
+    # photon out bottom
     p_move[2, 1] = np.NINF
     p_move[2, 0] = 0.3
 
     storage = get_storage()
     assert np.array_equal(storage, np.zeros(2))
+    storage = save_ending(p_move, storage)
+    assert np.array_equal(storage, np.array([0, 0.3]))
 
-    storage = save_progress(p_gen, p_move, p_term, p_turn, storage)
+    # photon out top
+    p_move[2, 1] = np.PINF
+    p_move[2, 0] = 0.3
+
+    storage = get_storage()
     assert np.array_equal(storage, np.zeros(2))
-
-    storage = save_ending(p_gen, p_move, p_term, p_turn, storage)
-    assert np.array_equal(storage, np.array([0.3, 0.7]))
+    storage = save_ending(p_move, storage)
+    assert np.array_equal(storage, np.array([0.3, 0]))

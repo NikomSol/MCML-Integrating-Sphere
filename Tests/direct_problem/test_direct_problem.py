@@ -11,7 +11,7 @@ from sample import Sample, Layer, Material
 from source import AngularDistribution, Dimension, SpatialDistribution
 from source import Source, SourceCfg
 
-from detector import DetectorCfg, Measurement, Probe
+from detector import DetectorCfg, Measurement
 from detector import Detector
 
 from direct_problem import DirectProblemCfg
@@ -57,7 +57,7 @@ def cfg_ALL():
 
 @pytest.fixture
 def detector_ALL(cfg_ALL):
-    return Detector(cfg_ALL)
+    return cfg_ALL.get_detector()
 
 
 @pytest.fixture
