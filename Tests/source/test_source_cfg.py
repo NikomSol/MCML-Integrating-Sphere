@@ -3,8 +3,8 @@ import sys
 # Well, you'll have to deal with that for a while
 sys.path.append(".")
 
-import pytest
 import numpy as np
+import pytest
 
 from source import SourceCfg, AngularDistribution, Dimension, SpatialDistribution
 

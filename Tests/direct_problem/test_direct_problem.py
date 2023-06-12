@@ -3,19 +3,14 @@ import sys
 # Well, you'll have to deal with that for a while
 sys.path.append(".")
 
-import pytest
 import numpy as np
-
-from sample import Sample, Layer, Material
-
-from source import AngularDistribution, Dimension, SpatialDistribution
-from source import Source, SourceCfg
+import pytest
 
 from detector import DetectorCfg, Measurement
-from detector import Detector
+from direct_problem import DirectProblem, DirectProblemCfg
+from sample import Sample, Layer, Material
+from source import AngularDistribution, Dimension, SpatialDistribution, Source, SourceCfg
 
-from direct_problem import DirectProblemCfg
-from direct_problem import DirectProblem
 
 @pytest.fixture
 def classic_sample():
@@ -29,7 +24,7 @@ def classic_sample():
         Layer(material=Material.transparent,
               start=2., end=3.,
               mu_a=1., mu_s=1., g=0.9, n=1.4)
-        ])
+    ])
 
 
 @pytest.fixture
@@ -49,15 +44,15 @@ def classic_source(classic_source_cfg, classic_sample):
 
 
 @pytest.fixture
-def cfg_ALL():
+def cfg_all():
     return DetectorCfg(
         measurement=Measurement.ALL,
     )
 
 
 @pytest.fixture
-def detector_ALL(cfg_ALL):
-    return cfg_ALL.get_detector()
+def detector_all(cfg_all):
+    return cfg_all.get_detector()
 
 
 @pytest.fixture
@@ -69,9 +64,9 @@ def direct_problem_cfg():
 
 
 @pytest.fixture
-def direct_problem(direct_problem_cfg, classic_sample, classic_source, detector_ALL):
-    return DirectProblem(direct_problem_cfg,
-                         classic_sample, classic_source, detector_ALL)
+def direct_problem(direct_problem_cfg, classic_sample, classic_source, detector_all):
+    return DirectProblem(direct_problem_cfg, classic_sample, classic_source, detector_all)
+
 
 @pytest.fixture
 def base_p():
@@ -81,7 +76,6 @@ def base_p():
 
 
 def test_direct_problem_get_func_term(direct_problem, base_p):
-
     term = direct_problem.get_func_term()
 
     p2 = base_p * 1.
@@ -95,7 +89,6 @@ def test_direct_problem_get_func_term(direct_problem, base_p):
 
 
 def test_direct_problem_get_func_turn(direct_problem, base_p):
-
     turn = direct_problem.get_func_turn()
 
     p_turn = turn(base_p)
@@ -105,7 +98,6 @@ def test_direct_problem_get_func_turn(direct_problem, base_p):
 
 
 def test_direct_problem_get_func_reflection(direct_problem, base_p):
-
     reflection = direct_problem.get_func_reflection()
 
     # layer - layer
@@ -182,7 +174,6 @@ def test_direct_problem_get_func_reflection(direct_problem, base_p):
 
 
 def test_direct_problem_get_func_move(direct_problem, base_p):
-
     move = direct_problem.get_func_move()
 
     p_move = move(base_p)

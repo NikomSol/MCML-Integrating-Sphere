@@ -1,15 +1,14 @@
 import numpy as np
 from numba import njit
 
+from detector import Detector
 from sample import Sample
 from source import Source
-from detector import Detector
 from .cfg import DirectProblemCfg
 
 
 class DirectProblem:
-    def __init__(self, cfg: DirectProblemCfg,
-                 sample: Sample, source: Source, detector: Detector):
+    def __init__(self, cfg: DirectProblemCfg, sample: Sample, source: Source, detector: Detector):
         self.cfg = cfg
         self.sample = sample
         self.source = source
@@ -24,8 +23,8 @@ class DirectProblem:
         save_ending = detector.get_func_save_ending()
         get_storage = detector.get_func_get_storage()
 
-        save_absorbtion = self.get_func_save_absorbtion()
-        get_storage_absorbtion = self.get_func_get_storage_absorbtion()
+        save_absorption = self.get_func_save_absorption()
+        get_storage_absorption = self.get_func_get_storage_absorption()
 
         move = self.get_func_move()
         term = self.get_func_term()
@@ -34,7 +33,7 @@ class DirectProblem:
         @njit(fastmath=True)
         def trace():
             storage = get_storage()
-            storage_absorbtion = get_storage_absorbtion()
+            storage_absorption = get_storage_absorption()
 
             p_gen = generate()  # Save start photon parameters
             p_turn = p_gen * 1.  # First cycle photon parameters
@@ -58,13 +57,13 @@ class DirectProblem:
                 # print(p_turn)
 
             storage = save_ending(p_move, storage)
-            storage_absorbtion = save_absorbtion(p_gen, p_move, p_term, storage_absorbtion)
+            storage_absorption = save_absorption(p_gen, p_move, p_term, storage_absorption)
             # print(storage)
             # print(p_gen)
             # print(p_move)
             # print(p_term)
             # print(p_turn)
-            return storage, storage_absorbtion
+            return storage, storage_absorption
 
         return trace
 
@@ -72,14 +71,14 @@ class DirectProblem:
         N = self.cfg.N
         trace = self.get_func_trace()
         storage = self.detector.get_func_get_storage()()
-        storage_absorbtion = self.get_func_get_storage_absorbtion()()
+        storage_absorption = self.get_func_get_storage_absorption()()
 
         for _ in range(N):
-            _storage, _storage_absorbtion = trace()
+            _storage, _storage_absorption = trace()
             storage += _storage
-            storage_absorbtion += _storage_absorbtion
+            storage_absorption += _storage_absorption
 
-        return storage, storage_absorbtion
+        return storage, storage_absorption
 
     def get_func_move(self):
         sample = self.sample
@@ -95,7 +94,7 @@ class DirectProblem:
         @njit(fastmath=True)
         def move(old_p):
             # Считаем, что Sum(l*mu_t)=-log(x)=l_rand, и при переходе через границу
-            # убавляем l_rand в соответсвии с пройденным путем
+            # убавляем l_rand в соответствии с пройденным путем
 
             p = old_p * 1.
 
@@ -132,7 +131,7 @@ class DirectProblem:
                 l_free_path = 1 / mu_t
                 l_layer = l_rand * l_free_path
 
-                # Расчитываем на какую величину мы должны переместиться
+                # Рассчитываем на какую величину мы должны переместиться
                 new_p_z = p[0, 2] + l_layer * p[1, 2]
                 # Проверка выхода за границу
                 if z_start < new_p_z < z_end:
@@ -150,7 +149,7 @@ class DirectProblem:
                 else:
                     l_part = (z_start - p[0, 2]) / p[1, 2]
 
-                # Уменьшаем случайную l_rand в соответсвии с пройденным путем
+                # Уменьшаем случайную l_rand в соответствии с пройденным путем
                 l_rand = l_rand - mu_t * l_part
 
                 # Расчет новой координаты на границе
@@ -308,20 +307,20 @@ class DirectProblem:
 
         return R_frenel
 
-    # Absorbtion saving
-    def get_func_get_storage_absorbtion(self):
+    # absorption saving
+    def get_func_get_storage_absorption(self):
 
         @njit(fastmath=True)
-        def get_storage_absorbtion():
+        def get_storage_absorption():
             return 0
 
-        return get_storage_absorbtion
+        return get_storage_absorption
 
-    def get_func_save_absorbtion(self):
+    def get_func_save_absorption(self):
 
         @njit(fastmath=True)
-        def save_absorbtion(p_gen, p_move, p_term, storage_absorbtion):
-            _storage = storage_absorbtion * 1.
+        def save_absorption(p_gen, p_move, p_term, storage_absorption):
+            _storage = storage_absorption * 1.
 
             if np.isinf(p_move[2, 1]):
                 _storage += p_gen[2, 0] - p_move[2, 0]
@@ -331,6 +330,4 @@ class DirectProblem:
                 raise ValueError('Photon in sample with mass left trace cyrcle')
             return _storage
 
-        return save_absorbtion
-        
-        return get_storage_absorbtion
+        return save_absorption
