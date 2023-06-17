@@ -26,7 +26,7 @@ def detector_all(cfg_all):
 
 
 def test_detector_all_storage(detector_all):
-    get_storage = detector_all.get_func_get_storage()
+    get_storage = detector_all.get_func_get_storage_emission()
     storage = get_storage()
     assert np.array_equal(storage, np.zeros(2))
 
@@ -37,8 +37,8 @@ def test_detector_all_storage(detector_all):
 
 
 def test_detector_all_save_in_medium_with_mass(detector_all):
-    get_storage = detector_all.get_func_get_storage()
-    save_ending = detector_all.get_func_save_ending_all()
+    get_storage = detector_all.get_func_get_storage_emission()
+    save_ending = detector_all.get_func_save_emission()
 
     # photon in medium with mass
     p_move = np.ones((3, 3))
@@ -50,8 +50,8 @@ def test_detector_all_save_in_medium_with_mass(detector_all):
 
 
 def test_detector_all_save_in_medium_without_mass(detector_all):
-    get_storage = detector_all.get_func_get_storage()
-    save_ending = detector_all.get_func_save_ending_all()
+    get_storage = detector_all.get_func_get_storage_emission()
+    save_ending = detector_all.get_func_save_emission()
 
     # photon in medium with mass
     p_move = np.ones((3, 3))
@@ -66,8 +66,8 @@ def test_detector_all_save_in_medium_without_mass(detector_all):
 
 
 def test_detector_all_save_out_medium_with_mass(detector_all):
-    get_storage = detector_all.get_func_get_storage()
-    save_ending = detector_all.get_func_save_ending_all()
+    get_storage = detector_all.get_func_get_storage_emission()
+    save_ending = detector_all.get_func_save_emission()
 
     # photon in medium with mass
     p_move = np.ones((3, 3))

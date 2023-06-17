@@ -8,18 +8,18 @@ class Detector:
 
 class DetectorAll(Detector):
 
-    def get_func_get_storage(self):
+    def get_func_get_storage_emission(self):
 
         @njit(fastmath=True)
-        def get_storage():
+        def get_storage_emission():
             return np.zeros(2)
 
-        return get_storage
+        return get_storage_emission
 
-    def get_func_save_ending(self):
+    def get_func_save_emission(self):
 
         @njit(fastmath=True)
-        def save_ending(p_move, storage):
+        def save_emission(p_move, storage):
             _storage = storage * 1.
 
             if np.isposinf(p_move[2, 1]):
@@ -29,25 +29,25 @@ class DetectorAll(Detector):
 
             return _storage
 
-        return save_ending
+        return save_emission
 
 
 class DetectorCollimatedDiffuse(Detector):
     collimated_cosine = 0.99
 
-    def get_func_get_storage(self):
+    def get_func_get_storage_emission(self):
 
         @njit(fastmath=True)
-        def get_storage():
+        def get_storage_emission():
             return np.zeros(4)
 
-        return get_storage
+        return get_storage_emission
 
-    def get_func_save_ending(self):
+    def get_func_save_emission(self):
         collimated_cosine = self.collimated_cosine
 
         @njit(fastmath=True)
-        def save_ending(p_move, storage):
+        def save_emission(p_move, storage):
             _storage = storage * 1.
 
             if np.isposinf(p_move[2, 1]):
@@ -63,7 +63,7 @@ class DetectorCollimatedDiffuse(Detector):
 
             return _storage
 
-        return save_ending
+        return save_emission
 
 
 class IntegratingSphereIdeal(Detector):
@@ -74,22 +74,22 @@ class IntegratingSphereIdeal(Detector):
     def __init__(self, positions):
         self.positions = positions
 
-    def get_func_get_storage(self):
+    def get_func_get_storage_emission(self):
         positions_num = len(self.positions)
 
         @njit(fastmath=True)
-        def get_storage():
+        def get_storage_emission():
             return np.zeros((2, positions_num))
 
-        return get_storage
+        return get_storage_emission
 
-    def get_func_save_ending(self):
+    def get_func_save_emission(self):
         positions = self.positions
         port_radius = self.port_diameter / 2.
         sphere_diameter = self.sphere_diameter
 
         @njit(fastmath=True)
-        def save_ending(p_move, storage):
+        def save_emission(p_move, storage):
 
             # 1 step: calc z1, z2 of intersept photon trace and port cylinder
             # 2 step: calc which position of port between z1, z2
@@ -132,7 +132,7 @@ class IntegratingSphereIdeal(Detector):
 
             return _storage
 
-        return save_ending
+        return save_emission
 
 
 class IntegratingSphereThorlabs(Detector):

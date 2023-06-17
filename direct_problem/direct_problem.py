@@ -17,15 +17,15 @@ class DirectProblem:
     def solve(self):
         N = self.cfg.N
         trace = self.get_func_trace()
-        storage = self.detector.get_func_get_storage()()
+        storage_emission = self.detector.get_func_get_storage_emission()()
         storage_absorption = self.get_func_get_storage_absorption()()
 
         for _ in range(N):
-            _storage, _storage_absorption = trace()
-            storage += _storage
+            _storage_emission, _storage_absorption = trace()
+            storage_emission += _storage_emission
             storage_absorption += _storage_absorption
 
-        return storage, storage_absorption
+        return storage_emission, storage_absorption
 
     def get_func_trace(self):
         source = self.source
@@ -33,8 +33,8 @@ class DirectProblem:
 
         generate = source.get_func_generator()
 
-        save_ending = detector.get_func_save_ending()
-        get_storage = detector.get_func_get_storage()
+        save_emission = detector.get_func_save_emission()
+        get_storage_emission = detector.get_func_get_storage_emission()
 
         save_absorption = self.get_func_save_absorption()
         get_storage_absorption = self.get_func_get_storage_absorption()
@@ -43,9 +43,9 @@ class DirectProblem:
         term = self.get_func_term()
         turn = self.get_func_turn()
 
-        # @njit(fastmath=True)
+        @njit(fastmath=True)
         def trace():
-            storage = get_storage()
+            storage_emission = get_storage_emission()
             storage_absorption = get_storage_absorption()
 
             p_gen = generate()  # Save start photon parameters
@@ -70,14 +70,14 @@ class DirectProblem:
                 # print(p_term)
                 # print(p_turn)
 
-            storage = save_ending(p_move, storage)
+            storage_emission = save_emission(p_move, storage_emission)
             storage_absorption = save_absorption(p_gen, p_move, p_term, storage_absorption)
             # print(storage)
             # print(p_gen)
             # print(p_move)
             # print(p_term)
             # print(p_turn)
-            return storage, storage_absorption
+            return storage_emission, storage_absorption
 
         return trace
 
