@@ -53,6 +53,7 @@ def direct_problem_cfg():
         threads=1
     )
 
+# TODO maybe we can create list of test with different sample
 
 # Bouguer-Lambert-Beer law (blb)
 
