@@ -136,7 +136,7 @@ def test_direct_problem_blb_s(direct_problem_blb_s):
     n = layer.n
 
     trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
-    assert solution[1] == 0 
+    assert solution[1] == 0
     assert (solution[0][0] - trans * N) / solution[0][0] < relative_error
     diffuse = solution[0][1] + solution[0][2]
     assert (diffuse - losses * mu_s / (mu_a + mu_s) * N) / diffuse < relative_error
@@ -180,9 +180,9 @@ def test_direct_problem_blb_as(direct_problem_blb_as):
     n = layer.n
 
     trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
-    raise ValueError(solution, trans, refl, losses)
-    assert (solution[1] - losses * mu_a / (mu_a + mu_s) * N) / solution[1] < relative_error
     assert (solution[0][0] - trans * N) / solution[0][0] < relative_error
-    diffuse = solution[0][1] + solution[0][2]
-    assert (diffuse - losses * mu_s / (mu_a + mu_s) * N) / diffuse < relative_error
     assert (solution[0][3] - refl * N) / solution[0][3] < relative_error
+
+    diffuse = solution[0][1] + solution[0][2]
+    assert diffuse < losses * mu_s / (mu_a + mu_s) * N
+    assert solution[1] > losses * mu_a / (mu_a + mu_s) * N

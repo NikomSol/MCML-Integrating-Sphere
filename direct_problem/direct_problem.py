@@ -129,21 +129,24 @@ class DirectProblem:
                 mu_s = mu_s_table[layer_index]
                 mu_t = mu_a + mu_s
 
-                l_free_path = 1 / mu_t
-                l_layer = l_rand * l_free_path
+                # В рассеивающей среде мы определяем длину свободного пробега
+                # и проверяем не рассеялись ли мы внутри среды
+                if mu_s != 0:
 
-                # Рассчитываем на какую величину мы должны переместиться
-                new_p_z = p[0, 2] + l_layer * p[1, 2]
-                # Проверка выхода за границу
-                if z_start < new_p_z < z_end:
-                    # Без взаимодействия с границей раздела сред
-                    new_p_x = p[0, 0] + l_layer * p[1, 0]
-                    new_p_y = p[0, 1] + l_layer * p[1, 1]
-                    p[0, 0], p[0, 1], p[0, 2] = new_p_x, new_p_y, new_p_z
-                    # p[2, 0] = p[2, 0] * np.exp(-mu_a * l_layer)
-                    p[2, 0] = p[2, 0] * np.exp(-mu_a * l_layer)
-                    break
-                    # С взаимодействием с границей раздела сред
+                    l_free_path = 1 / mu_s
+                    l_scattering = l_rand * l_free_path
+
+                    # Рассчитываем на какую величину мы должны переместиться
+                    new_p_z = p[0, 2] + l_scattering * p[1, 2]
+                    # Проверка выхода за границу
+                    if z_start < new_p_z < z_end:
+                        # Без взаимодействия с границей раздела сред
+                        new_p_x = p[0, 0] + l_scattering * p[1, 0]
+                        new_p_y = p[0, 1] + l_scattering * p[1, 1]
+                        p[0, 0], p[0, 1], p[0, 2] = new_p_x, new_p_y, new_p_z
+                        p[2, 0] = p[2, 0] * np.exp(-mu_a * l_scattering)
+                        break
+                        # С взаимодействием с границей раздела сред
 
                 # Расчет на сколько мы переместились до границы
                 if p[1, 2] > 0:
