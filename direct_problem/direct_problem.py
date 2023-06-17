@@ -14,6 +14,19 @@ class DirectProblem:
         self.source = source
         self.detector = detector
 
+    def solve(self):
+        N = self.cfg.N
+        trace = self.get_func_trace()
+        storage = self.detector.get_func_get_storage()()
+        storage_absorption = self.get_func_get_storage_absorption()()
+
+        for _ in range(N):
+            _storage, _storage_absorption = trace()
+            storage += _storage
+            storage_absorption += _storage_absorption
+
+        return storage, storage_absorption
+
     def get_func_trace(self):
         source = self.source
         detector = self.detector
@@ -30,13 +43,14 @@ class DirectProblem:
         term = self.get_func_term()
         turn = self.get_func_turn()
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def trace():
             storage = get_storage()
             storage_absorption = get_storage_absorption()
 
             p_gen = generate()  # Save start photon parameters
             p_turn = p_gen * 1.  # First cycle photon parameters
+            p_term = p_gen * 1.  # First cycle photon parameters
             for _ in range(10 ** 3):
                 p_move = move(p_turn)
 
@@ -66,19 +80,6 @@ class DirectProblem:
             return storage, storage_absorption
 
         return trace
-
-    def solve(self):
-        N = self.cfg.N
-        trace = self.get_func_trace()
-        storage = self.detector.get_func_get_storage()()
-        storage_absorption = self.get_func_get_storage_absorption()()
-
-        for _ in range(N):
-            _storage, _storage_absorption = trace()
-            storage += _storage
-            storage_absorption += _storage_absorption
-
-        return storage, storage_absorption
 
     def get_func_move(self):
         sample = self.sample

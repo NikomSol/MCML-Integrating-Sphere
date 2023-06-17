@@ -185,5 +185,4 @@ def test_direct_problem_get_func_move(direct_problem, base_p):
 def test_direct_problem_get_trace(direct_problem):
     trace = direct_problem.get_func_trace()
     storage = trace()
-    raise ValueError(storage)
-    assert np.sum(storage) == 1
+    assert np.sum(storage[0]) + storage[1] == 1
