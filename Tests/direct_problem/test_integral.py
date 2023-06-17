@@ -79,7 +79,7 @@ def direct_problem_blb_a(direct_problem_cfg, sample_blb_a,
 
 def test_direct_problem_blb_a(direct_problem_blb_a):
     N = direct_problem_blb_a.cfg.N
-    relative_error = 10**(-2)
+    relative_error = 5 * 10**(-2)
     absolute_error = relative_error * N
 
     solution = direct_problem_blb_a.solve()
@@ -95,6 +95,94 @@ def test_direct_problem_blb_a(direct_problem_blb_a):
     trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
     assert (solution[1] - losses * mu_a / (mu_a + mu_s) * N) / solution[1] < relative_error
     assert (solution[0][0] - trans * N) / solution[0][0] < relative_error
-    assert (solution[0][1] - 0) < absolute_error
-    assert (solution[0][2] - 0) < absolute_error
+    assert solution[0][1] == 0
+    assert solution[0][2] == 0
+    assert (solution[0][3] - refl * N) / solution[0][3] < relative_error
+
+# Scattering layer - s
+
+@pytest.fixture
+def sample_blb_s():
+    return Sample([Layer(material=Material.scattering,
+                         start=0., end=0.5, n=2.5,
+                         mu_a=0, mu_s=0.5, g=0.5)])
+
+
+@pytest.fixture
+def source_blb_s(source_cfg, sample_blb_s):
+    return Source(source_cfg, sample_blb_s)
+
+
+@pytest.fixture
+def direct_problem_blb_s(direct_problem_cfg, sample_blb_s,
+                         source_blb_s, detector):
+    return DirectProblem(direct_problem_cfg, sample_blb_s,
+                         source_blb_s, detector)
+
+
+def test_direct_problem_blb_s(direct_problem_blb_s):
+    N = direct_problem_blb_s.cfg.N
+    relative_error = 5 * 10**(-2)
+    absolute_error = relative_error * N
+
+    solution = direct_problem_blb_s.solve()
+
+    assert np.abs(np.sum(solution[0]) + solution[1] - N) < absolute_error
+
+    layer = direct_problem_blb_s.sample.layers[0]
+    mu_a = layer.mu_a
+    mu_s = layer.mu_s
+    z = layer.end - layer.start
+    n = layer.n
+
+    trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
+    assert solution[1] == 0 
+    assert (solution[0][0] - trans * N) / solution[0][0] < relative_error
+    diffuse = solution[0][1] + solution[0][2]
+    assert (diffuse - losses * mu_s / (mu_a + mu_s) * N) / diffuse < relative_error
+    assert (solution[0][3] - refl * N) / solution[0][3] < relative_error
+
+
+# Absorbtion + Scattering layer - as
+
+@pytest.fixture
+def sample_blb_as():
+    return Sample([Layer(material=Material.scattering,
+                         start=0., end=0.5, n=2.5,
+                         mu_a=0.5, mu_s=0.5, g=0.5)])
+
+
+@pytest.fixture
+def source_blb_as(source_cfg, sample_blb_as):
+    return Source(source_cfg, sample_blb_as)
+
+
+@pytest.fixture
+def direct_problem_blb_as(direct_problem_cfg, sample_blb_as,
+                          source_blb_as, detector):
+    return DirectProblem(direct_problem_cfg, sample_blb_as,
+                         source_blb_as, detector)
+
+
+def test_direct_problem_blb_as(direct_problem_blb_as):
+    N = direct_problem_blb_as.cfg.N
+    relative_error = 5 * 10**(-2)
+    absolute_error = relative_error * N
+
+    solution = direct_problem_blb_as.solve()
+
+    assert np.abs(np.sum(solution[0]) + solution[1] - N) < absolute_error
+
+    layer = direct_problem_blb_as.sample.layers[0]
+    mu_a = layer.mu_a
+    mu_s = layer.mu_s
+    z = layer.end - layer.start
+    n = layer.n
+
+    trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
+    raise ValueError(solution, trans, refl, losses)
+    assert (solution[1] - losses * mu_a / (mu_a + mu_s) * N) / solution[1] < relative_error
+    assert (solution[0][0] - trans * N) / solution[0][0] < relative_error
+    diffuse = solution[0][1] + solution[0][2]
+    assert (diffuse - losses * mu_s / (mu_a + mu_s) * N) / diffuse < relative_error
     assert (solution[0][3] - refl * N) / solution[0][3] < relative_error

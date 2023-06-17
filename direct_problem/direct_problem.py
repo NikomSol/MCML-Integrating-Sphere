@@ -140,6 +140,7 @@ class DirectProblem:
                     new_p_x = p[0, 0] + l_layer * p[1, 0]
                     new_p_y = p[0, 1] + l_layer * p[1, 1]
                     p[0, 0], p[0, 1], p[0, 2] = new_p_x, new_p_y, new_p_z
+                    # p[2, 0] = p[2, 0] * np.exp(-mu_a * l_layer)
                     p[2, 0] = p[2, 0] * np.exp(-mu_a * l_layer)
                     break
                     # С взаимодействием с границей раздела сред
