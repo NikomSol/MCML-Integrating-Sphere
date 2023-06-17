@@ -14,14 +14,27 @@ class DirectProblem:
         self.source = source
         self.detector = detector
 
+    def solve(self):
+        N = self.cfg.N
+        trace = self.get_func_trace()
+        storage_emission = self.detector.get_func_get_storage_emission()()
+        storage_absorption = self.get_func_get_storage_absorption()()
+
+        for _ in range(N):
+            _storage_emission, _storage_absorption = trace()
+            storage_emission += _storage_emission
+            storage_absorption += _storage_absorption
+
+        return storage_emission, storage_absorption
+
     def get_func_trace(self):
         source = self.source
         detector = self.detector
 
         generate = source.get_func_generator()
 
-        save_ending = detector.get_func_save_ending()
-        get_storage = detector.get_func_get_storage()
+        save_emission = detector.get_func_save_emission()
+        get_storage_emission = detector.get_func_get_storage_emission()
 
         save_absorption = self.get_func_save_absorption()
         get_storage_absorption = self.get_func_get_storage_absorption()
@@ -32,11 +45,12 @@ class DirectProblem:
 
         @njit(fastmath=True)
         def trace():
-            storage = get_storage()
+            storage_emission = get_storage_emission()
             storage_absorption = get_storage_absorption()
 
             p_gen = generate()  # Save start photon parameters
             p_turn = p_gen * 1.  # First cycle photon parameters
+            p_term = p_gen * 1.  # First cycle photon parameters
             for _ in range(10 ** 3):
                 p_move = move(p_turn)
 
@@ -56,29 +70,16 @@ class DirectProblem:
                 # print(p_term)
                 # print(p_turn)
 
-            storage = save_ending(p_move, storage)
+            storage_emission = save_emission(p_move, storage_emission)
             storage_absorption = save_absorption(p_gen, p_move, p_term, storage_absorption)
             # print(storage)
             # print(p_gen)
             # print(p_move)
             # print(p_term)
             # print(p_turn)
-            return storage, storage_absorption
+            return storage_emission, storage_absorption
 
         return trace
-
-    def solve(self):
-        N = self.cfg.N
-        trace = self.get_func_trace()
-        storage = self.detector.get_func_get_storage()()
-        storage_absorption = self.get_func_get_storage_absorption()()
-
-        for _ in range(N):
-            _storage, _storage_absorption = trace()
-            storage += _storage
-            storage_absorption += _storage_absorption
-
-        return storage, storage_absorption
 
     def get_func_move(self):
         sample = self.sample
@@ -128,20 +129,24 @@ class DirectProblem:
                 mu_s = mu_s_table[layer_index]
                 mu_t = mu_a + mu_s
 
-                l_free_path = 1 / mu_t
-                l_layer = l_rand * l_free_path
+                # В рассеивающей среде мы определяем длину свободного пробега
+                # и проверяем не рассеялись ли мы внутри среды
+                if mu_s != 0:
 
-                # Рассчитываем на какую величину мы должны переместиться
-                new_p_z = p[0, 2] + l_layer * p[1, 2]
-                # Проверка выхода за границу
-                if z_start < new_p_z < z_end:
-                    # Без взаимодействия с границей раздела сред
-                    new_p_x = p[0, 0] + l_layer * p[1, 0]
-                    new_p_y = p[0, 1] + l_layer * p[1, 1]
-                    p[0, 0], p[0, 1], p[0, 2] = new_p_x, new_p_y, new_p_z
-                    p[2, 0] = p[2, 0] * np.exp(-mu_a * l_layer)
-                    break
-                    # С взаимодействием с границей раздела сред
+                    l_free_path = 1 / mu_s
+                    l_scattering = l_rand * l_free_path
+
+                    # Рассчитываем на какую величину мы должны переместиться
+                    new_p_z = p[0, 2] + l_scattering * p[1, 2]
+                    # Проверка выхода за границу
+                    if z_start < new_p_z < z_end:
+                        # Без взаимодействия с границей раздела сред
+                        new_p_x = p[0, 0] + l_scattering * p[1, 0]
+                        new_p_y = p[0, 1] + l_scattering * p[1, 1]
+                        p[0, 0], p[0, 1], p[0, 2] = new_p_x, new_p_y, new_p_z
+                        p[2, 0] = p[2, 0] * np.exp(-mu_a * l_scattering)
+                        break
+                        # С взаимодействием с границей раздела сред
 
                 # Расчет на сколько мы переместились до границы
                 if p[1, 2] > 0:
