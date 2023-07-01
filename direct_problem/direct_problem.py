@@ -5,6 +5,7 @@ from detector import Detector
 from sample import Sample
 from source import Source
 from .cfg import DirectProblemCfg
+from support_functions import timeit
 
 
 class DirectProblem:
@@ -43,7 +44,7 @@ class DirectProblem:
         term = self.get_func_term()
         turn = self.get_func_turn()
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def trace():
             storage_emission = get_storage_emission()
             storage_absorption = get_storage_absorption()
@@ -54,21 +55,19 @@ class DirectProblem:
             for _ in range(10 ** 3):
                 p_move = move(p_turn)
 
-                # Check leave calc area
+                # print(_)
+                # print(p_move)
+                # print(p_term)
+
+                # Check leave z-area
                 if np.isinf(p_move[2, 1]):
                     break
-                # Check small weight
+                # Check small weight and leave xy-area
                 p_term = term(p_move)
                 if p_term[2, 0] == 0:
                     break
 
                 p_turn = turn(p_term)
-
-                # print(_)
-                # print(p_gen)
-                # print(p_move)
-                # print(p_term)
-                # print(p_turn)
 
             storage_emission = save_emission(p_move, storage_emission)
             storage_absorption = save_absorption(p_gen, p_move, p_term, storage_absorption)
@@ -92,7 +91,7 @@ class DirectProblem:
 
         l_rand_tol = 1e-5  # Минимальное значение l_rand
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def move(old_p):
             # Считаем, что Sum(l*mu_t)=-log(x)=l_rand, и при переходе через границу
             # убавляем l_rand в соответствии с пройденным путем
@@ -155,7 +154,7 @@ class DirectProblem:
                     l_part = (z_start - p[0, 2]) / p[1, 2]
 
                 # Уменьшаем случайную l_rand в соответствии с пройденным путем
-                l_rand = l_rand - mu_t * l_part
+                l_rand = l_rand - mu_s * l_part
 
                 # Расчет новой координаты на границе
                 new_p_x = p[0, 0] + l_part * p[1, 0]
@@ -177,7 +176,7 @@ class DirectProblem:
     def get_func_turn(self):
         g_table = self.sample.g_table
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def turn(old_p):
             p = old_p * 1.
             g = g_table[int(p[2, 1])]
@@ -216,9 +215,14 @@ class DirectProblem:
 
     def get_func_term(self):
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def term(old_p):
             p = old_p * 1.
+
+            if p[0, 0] > 50 or p[0, 1] > 50:
+                p[2, 0] = 0
+                return p
+
             mass = p[2, 0]
             threshold_m = 10 ** -4
             threshold_factor = 10
@@ -227,6 +231,7 @@ class DirectProblem:
                     mass = mass * threshold_factor
                 else:
                     mass = 0.
+
             p[2, 0] = mass
             return p
 
@@ -237,44 +242,52 @@ class DirectProblem:
         n_table = self.sample.n_table
         R_frenel = self.get_func_R_frenel()
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def reflection(old_p):
             p = old_p * 1.
             layer_index = p[2, 1]
             layer_number = len(n_table)
-            cz = p[1, 2]
+            cz1 = p[1, 2]
 
-            if np.isneginf(layer_index):
-                next_layer_index = 0
+            if np.isinf(layer_index):
                 n1 = 1
-                n2 = n_table[next_layer_index]
-            elif np.isposinf(layer_index):
-                next_layer_index = layer_number - 1
-                n1 = 1
+                if np.isneginf(layer_index):
+                    next_layer_index = 0
+                else:
+                    next_layer_index = layer_number - 1
                 n2 = n_table[next_layer_index]
             else:
                 layer_index = int(layer_index)
                 n1 = n_table[layer_index]
-                if layer_index == 0 and cz < 0:
+                if layer_index == 0 and cz1 < 0:
                     next_layer_index = np.NINF
                     n2 = 1
-                elif layer_index == layer_number - 1 and cz > 0:
+                elif layer_index == layer_number - 1 and cz1 > 0:
                     next_layer_index = np.PINF
                     n2 = 1
                 else:
-                    next_layer_index = int(layer_index + np.sign(cz))
+                    next_layer_index = int(layer_index + np.sign(cz1))
                     n2 = n_table[next_layer_index]
 
-            if np.random.rand() < R_frenel(np.arccos(cz), n1, n2):
-                p[1, 2] = -cz
-            else:
-                # new_sin * n2 = old_sin * n1
-                # new_sin = old_sin * inv_n
-                inv_n = n1 / n2
-                p[1, 2] = np.sqrt(1 - inv_n ** 2 * (1 - cz ** 2)) * np.sign(cz)
-                p[1, 0] = p[1, 0] * inv_n
-                p[1, 1] = p[1, 1] * inv_n
-                p[2, 1] = next_layer_index
+            inv_n = n1 / n2
+            sz1 = np.sqrt(1 - cz1 * cz1)
+            sz2 = inv_n * sz1
+
+            # Full back reflection
+            if sz2 >= 1:
+                p[1, 2] = - cz1
+                return p
+
+            cz2 = np.sqrt(1 - sz2 * sz2) * np.sign(cz1)
+
+            if np.random.rand() < R_frenel(cz1, cz2, inv_n):
+                p[1, 2] = - cz1
+                return p
+
+            p[1, 2] = cz2
+            p[1, 0] = p[1, 0] * inv_n
+            p[1, 1] = p[1, 1] * inv_n
+            p[2, 1] = next_layer_index
 
             return p
 
@@ -282,33 +295,19 @@ class DirectProblem:
 
     def get_func_R_frenel(self):
 
-        @njit(fastmath=True)
-        def R_frenel(th, n1, n2):
-            if th > np.pi / 2:
-                th = np.pi - th
+        # @njit(fastmath=True)
+        def R_frenel(cz1, cz2, inv_n):
+            a_s = inv_n * cz1 - cz2
+            b_s = inv_n * cz1 + cz2
+            rs = a_s / b_s
 
-            n = n1 / n2
-            cos_th1 = np.cos(th)
-            cos_th2 = np.cos(np.arcsin(n * np.sin(th)))
+            a_p = cz1 - inv_n * cz2
+            b_p = cz1 + inv_n * cz2
+            rp = a_p / b_p
 
-            def rs(cos_th1, cos_th2, n1, n2):
-                a = n1 * cos_th1 - n2 * cos_th2
-                b = n1 * cos_th1 + n2 * cos_th2
-                return a / b
+            rsp = 0.5 * (rs * rs + rp * rp)
 
-            def rp(cos_th1, cos_th2, n1, n2):
-                a = n2 * cos_th1 - n1 * cos_th2
-                b = n2 * cos_th1 + n1 * cos_th2
-                return a / b
-
-            if np.sin(th) >= n2 / n1:
-                res = 1.0
-            else:
-                res = 0.5 * ((rs(cos_th1, cos_th2, n1, n2)) ** 2 + (rp(cos_th1, cos_th2, n1, n2)) ** 2)
-
-            if res < 1e-6:
-                res = 0.0
-            return res
+            return rsp
 
         return R_frenel
 

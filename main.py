@@ -24,7 +24,7 @@ source_cfg = SourceCfg(dimension=Dimension.surface,
 
 detector_cfg = DetectorCfg(measurement=Measurement.CollimatedDiffuse)
 
-direct_problem_cfg = DirectProblemCfg(N=100000,
+direct_problem_cfg = DirectProblemCfg(N=100,
                                       threads=1)
 
 cfg = Cfg(
@@ -36,15 +36,12 @@ cfg = Cfg(
 cfg.validate()
 
 sample = Sample([
-    Layer(material=Material.transparent,
-          start=0., end=1.,
-          mu_a=0.1, mu_s=1., g=0.9, n=1.4),
-    Layer(material=Material.scattering,
-          start=1., end=2.,
-          mu_a=1., mu_s=1., g=0.9, n=1.5),
-    Layer(material=Material.transparent,
-          start=2., end=3.,
-          mu_a=1., mu_s=1., g=0.9, n=1.4)
+    Layer(material=Material.transparent, depth=1.,
+          mu_a=0., mu_s=0., g=0., n=1.45),
+    Layer(material=Material.scattering, depth=1.,
+          mu_a=1., mu_s=1., g=0.9, n=1.35),
+    Layer(material=Material.transparent, depth=1.,
+          mu_a=0., mu_s=0., g=0.0, n=1.45)
           ])
 
 detector = cfg.detector.get_detector()
