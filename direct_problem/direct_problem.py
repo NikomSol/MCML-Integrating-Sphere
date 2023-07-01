@@ -247,39 +247,47 @@ class DirectProblem:
             p = old_p * 1.
             layer_index = p[2, 1]
             layer_number = len(n_table)
-            cz = p[1, 2]
+            cz1 = p[1, 2]
 
-            if np.isneginf(layer_index):
-                next_layer_index = 0
+            if np.isinf(layer_index):
                 n1 = 1
-                n2 = n_table[next_layer_index]
-            elif np.isposinf(layer_index):
-                next_layer_index = layer_number - 1
-                n1 = 1
+                if np.isneginf(layer_index):
+                    next_layer_index = 0
+                else:
+                    next_layer_index = layer_number - 1
                 n2 = n_table[next_layer_index]
             else:
                 layer_index = int(layer_index)
                 n1 = n_table[layer_index]
-                if layer_index == 0 and cz < 0:
+                if layer_index == 0 and cz1 < 0:
                     next_layer_index = np.NINF
                     n2 = 1
-                elif layer_index == layer_number - 1 and cz > 0:
+                elif layer_index == layer_number - 1 and cz1 > 0:
                     next_layer_index = np.PINF
                     n2 = 1
                 else:
-                    next_layer_index = int(layer_index + np.sign(cz))
+                    next_layer_index = int(layer_index + np.sign(cz1))
                     n2 = n_table[next_layer_index]
 
-            if np.random.rand() < R_frenel(np.arccos(cz), n1, n2):
-                p[1, 2] = -cz
-            else:
-                # new_sin * n2 = old_sin * n1
-                # new_sin = old_sin * inv_n
-                inv_n = n1 / n2
-                p[1, 2] = np.sqrt(1 - inv_n ** 2 * (1 - cz ** 2)) * np.sign(cz)
-                p[1, 0] = p[1, 0] * inv_n
-                p[1, 1] = p[1, 1] * inv_n
-                p[2, 1] = next_layer_index
+            inv_n = n1 / n2
+            sz1 = np.sqrt(1 - cz1 * cz1)
+            sz2 = inv_n * sz1
+
+            # Full back reflection
+            if sz2 >= 1:
+                p[1, 2] = - cz1
+                return p
+
+            cz2 = np.sqrt(1 - sz2 * sz2) * np.sign(cz1)
+
+            if np.random.rand() < R_frenel(cz1, cz2, inv_n):
+                p[1, 2] = - cz1
+                return p
+
+            p[1, 2] = cz2
+            p[1, 0] = p[1, 0] * inv_n
+            p[1, 1] = p[1, 1] * inv_n
+            p[2, 1] = next_layer_index
 
             return p
 
@@ -288,31 +296,18 @@ class DirectProblem:
     def get_func_R_frenel(self):
 
         # @njit(fastmath=True)
-        def R_frenel(th, n1, n2):
-            if th > np.pi / 2:
-                th = np.pi - th
+        def R_frenel(cz1, cz2, inv_n):
+            a_s = inv_n * cz1 - cz2
+            b_s = inv_n * cz1 + cz2
+            rs = a_s / b_s
 
-            cos_th1 = np.cos(th)
-            cos_th2 = np.cos(np.arcsin(np.sin(th) * n1 / n2))
+            a_p = cz1 - inv_n * cz2
+            b_p = cz1 + inv_n * cz2
+            rp = a_p / b_p
 
-            def rs(cos_th1, cos_th2, n1, n2):
-                a = n1 * cos_th1 - n2 * cos_th2
-                b = n1 * cos_th1 + n2 * cos_th2
-                return a / b
+            rsp = 0.5 * (rs * rs + rp * rp)
 
-            def rp(cos_th1, cos_th2, n1, n2):
-                a = n2 * cos_th1 - n1 * cos_th2
-                b = n2 * cos_th1 + n1 * cos_th2
-                return a / b
-
-            if np.sin(th) >= n2 / n1:
-                res = 1.0
-            else:
-                res = 0.5 * ((rs(cos_th1, cos_th2, n1, n2)) ** 2 + (rp(cos_th1, cos_th2, n1, n2)) ** 2)
-
-            if res < 1e-6:
-                res = 0.0
-            return res
+            return rsp
 
         return R_frenel
 
