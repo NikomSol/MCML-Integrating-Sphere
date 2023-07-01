@@ -329,7 +329,8 @@ class DirectProblem:
             if np.isinf(p_move[2, 1]):
                 _storage += p_gen[2, 0] - p_move[2, 0]
             elif p_term[2, 0] == 0:
-                _storage += p_gen[2, 0]
+                if not (p_term[0, 0] > 50 or p_term[0, 1] > 50):
+                    _storage += p_gen[2, 0]
             else:
                 raise ValueError('Photon in sample with mass left trace cyrcle')
             return _storage
