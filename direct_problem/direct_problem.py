@@ -5,6 +5,7 @@ from detector import Detector
 from sample import Sample
 from source import Source
 from .cfg import DirectProblemCfg
+from support_functions import timeit
 
 
 class DirectProblem:
@@ -43,7 +44,7 @@ class DirectProblem:
         term = self.get_func_term()
         turn = self.get_func_turn()
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def trace():
             storage_emission = get_storage_emission()
             storage_absorption = get_storage_absorption()
@@ -54,21 +55,19 @@ class DirectProblem:
             for _ in range(10 ** 3):
                 p_move = move(p_turn)
 
-                # Check leave calc area
+                # print(_)
+                # print(p_move)
+                # print(p_term)
+
+                # Check leave z-area
                 if np.isinf(p_move[2, 1]):
                     break
-                # Check small weight
+                # Check small weight and leave xy-area
                 p_term = term(p_move)
                 if p_term[2, 0] == 0:
                     break
 
                 p_turn = turn(p_term)
-
-                # print(_)
-                # print(p_gen)
-                # print(p_move)
-                # print(p_term)
-                # print(p_turn)
 
             storage_emission = save_emission(p_move, storage_emission)
             storage_absorption = save_absorption(p_gen, p_move, p_term, storage_absorption)
@@ -92,7 +91,7 @@ class DirectProblem:
 
         l_rand_tol = 1e-5  # Минимальное значение l_rand
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def move(old_p):
             # Считаем, что Sum(l*mu_t)=-log(x)=l_rand, и при переходе через границу
             # убавляем l_rand в соответствии с пройденным путем
@@ -155,7 +154,7 @@ class DirectProblem:
                     l_part = (z_start - p[0, 2]) / p[1, 2]
 
                 # Уменьшаем случайную l_rand в соответствии с пройденным путем
-                l_rand = l_rand - mu_t * l_part
+                l_rand = l_rand - mu_s * l_part
 
                 # Расчет новой координаты на границе
                 new_p_x = p[0, 0] + l_part * p[1, 0]
@@ -177,7 +176,7 @@ class DirectProblem:
     def get_func_turn(self):
         g_table = self.sample.g_table
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def turn(old_p):
             p = old_p * 1.
             g = g_table[int(p[2, 1])]
@@ -216,9 +215,14 @@ class DirectProblem:
 
     def get_func_term(self):
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def term(old_p):
             p = old_p * 1.
+
+            if p[0, 0] > 50 or p[0, 1] > 50:
+                p[2, 0] = 0
+                return p
+
             mass = p[2, 0]
             threshold_m = 10 ** -4
             threshold_factor = 10
@@ -227,6 +231,7 @@ class DirectProblem:
                     mass = mass * threshold_factor
                 else:
                     mass = 0.
+
             p[2, 0] = mass
             return p
 
@@ -237,7 +242,7 @@ class DirectProblem:
         n_table = self.sample.n_table
         R_frenel = self.get_func_R_frenel()
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def reflection(old_p):
             p = old_p * 1.
             layer_index = p[2, 1]
@@ -282,14 +287,13 @@ class DirectProblem:
 
     def get_func_R_frenel(self):
 
-        @njit(fastmath=True)
+        # @njit(fastmath=True)
         def R_frenel(th, n1, n2):
             if th > np.pi / 2:
                 th = np.pi - th
 
-            n = n1 / n2
             cos_th1 = np.cos(th)
-            cos_th2 = np.cos(np.arcsin(n * np.sin(th)))
+            cos_th2 = np.cos(np.arcsin(np.sin(th) * n1 / n2))
 
             def rs(cos_th1, cos_th2, n1, n2):
                 a = n1 * cos_th1 - n2 * cos_th2

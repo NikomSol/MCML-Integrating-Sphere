@@ -41,7 +41,7 @@ def cfg():
 
     detector_cfg = DetectorCfg(measurement=Measurement.CollimatedDiffuse)
 
-    direct_problem_cfg = DirectProblemCfg(N=100000, threads=1)
+    direct_problem_cfg = DirectProblemCfg(N=10000, threads=1)
 
     cfg = Cfg(
         source=source_cfg,
@@ -76,7 +76,7 @@ def test_direct_problem_0(direct_problems):
     direct_problem = direct_problems[0]
     N = direct_problem.cfg.N
 
-    error_coefficient = 5
+    error_coefficient = 3
 
     solution = direct_problem.solve()
 
@@ -103,12 +103,11 @@ def test_direct_problem_0(direct_problems):
     assert np.abs(collimated_reflection - reference_collimated_reflection) < error_coefficient * np.sqrt(collimated_reflection)
 
 
-
 def test_direct_problem_1(direct_problems):
     direct_problem = direct_problems[1]
     N = direct_problem.cfg.N
 
-    error_coefficient = 5
+    error_coefficient = 3
 
     solution = direct_problem.solve()
 
