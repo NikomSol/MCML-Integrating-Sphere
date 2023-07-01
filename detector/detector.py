@@ -33,7 +33,7 @@ class DetectorAll(Detector):
 
 
 class DetectorCollimatedDiffuse(Detector):
-    collimated_cosine = 0.99
+    collimated_cosine = 1 - 10**(-10)
 
     def get_func_get_storage_emission(self):
 
