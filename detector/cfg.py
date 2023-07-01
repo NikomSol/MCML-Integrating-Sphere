@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .detector import DetectorAll, DetectorCollimatedDiffuse, IntegratingSphereIdeal, IntegratingSphereThorlabs
+from .detector import DetectorAll, DetectorCollimatedDiffuse, IntegratingSphere, IntegratingSphereThorlabs
+from .plot import PlotIntegratingSphere
 from .measurement import Measurement
 
 
@@ -34,8 +35,17 @@ class DetectorCfg:
         elif measurement is Measurement.CollimatedDiffuse:
             return DetectorCollimatedDiffuse()
         elif measurement is Measurement.MIS_Ideal:
-            return IntegratingSphereIdeal(positions)
+            return IntegratingSphere(positions)
         elif measurement is Measurement.MIS_Thorlabs:
-            return IntegratingSphereThorlabs
+            return IntegratingSphereThorlabs(positions)
+        else:
+            raise ValueError(f'measurement = {self.measurement} not available in DetectorCfg.get_detector')
+
+    def get_plot(self):
+        measurement = self.measurement
+        positions = self.positions
+
+        if measurement is Measurement.MIS_Ideal or measurement is Measurement.MIS_Thorlabs:
+            return PlotIntegratingSphere(positions)
         else:
             raise ValueError(f'measurement = {self.measurement} not available in DetectorCfg.get_detector')

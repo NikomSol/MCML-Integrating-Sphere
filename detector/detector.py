@@ -66,7 +66,7 @@ class DetectorCollimatedDiffuse(Detector):
         return save_emission
 
 
-class IntegratingSphereIdeal(Detector):
+class IntegratingSphere(Detector):
     sphere_diameter = 70
     port_diameter = 10
     gain = None
@@ -135,7 +135,7 @@ class IntegratingSphereIdeal(Detector):
         return save_emission
 
 
-class IntegratingSphereThorlabs(Detector):
+class IntegratingSphereThorlabs(IntegratingSphere):
     sphere_diameter = 70
 
     port_1_diameter = 12.5
@@ -155,5 +155,5 @@ class IntegratingSphereThorlabs(Detector):
 
     gain = 1
 
-    def __init__(self, positions):
-        raise NotImplementedError('class IntegratingSphereThorlabs')
+    def get_func_save_emission(self):
+        raise NotImplementedError

@@ -4,7 +4,6 @@ from source import SourceCfg, Dimension, SpatialDistribution, AngularDistributio
 from source import Source
 
 from detector import DetectorCfg, Measurement
-from detector import Detector, DetectorAll, IntegratingSphereIdeal, IntegratingSphereThorlabs
 
 from sample import Sample, Layer, Material
 
