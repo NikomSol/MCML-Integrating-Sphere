@@ -24,14 +24,11 @@ def classic_cfg():
 @pytest.fixture
 def classic_sample():
     return Sample([
-        Layer(material=Material.transparent,
-              start=0., end=1.,
+        Layer(material=Material.transparent, depth=1.,
               mu_a=0., mu_s=1., g=0.9, n=1.5),
-        Layer(material=Material.scattering,
-              start=1., end=2.,
+        Layer(material=Material.scattering, depth=1.,
               mu_a=1., mu_s=1., g=0.9, n=1.5),
-        Layer(material=Material.transparent,
-              start=2., end=3.,
+        Layer(material=Material.transparent, depth=1.,
               mu_a=1., mu_s=1., g=0.9, n=1.5)
     ])
 
@@ -49,7 +46,7 @@ def test_classic_source(classic_cfg, classic_source):
     assert np.array_equal(np.zeros((3, 3)), np.zeros((3, 3)))
 
     assert np.array_equal(func_generator()[1:],
-                          np.array([[0, 0, 1], [1, -1, 0]]))
+                          np.array([[0, 0, 1], [1, np.NINF, 0]]))
 
     def norm_func(_):
         return np.linalg.norm(func_generator()[0, :2])

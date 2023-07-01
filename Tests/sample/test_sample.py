@@ -22,8 +22,7 @@ def test_empty_sample(empty_sample):
 @pytest.fixture
 def scattering_sample():
     return Sample([
-        Layer(material=Material.scattering,
-              start=0., end=1.,
+        Layer(material=Material.scattering, depth=1.,
               mu_a=1., mu_s=1., g=0.9, n=1.5)
     ])
 
@@ -36,14 +35,11 @@ def test_scattering_sample(scattering_sample):
 @pytest.fixture
 def classic_sample():
     return Sample([
-        Layer(material=Material.transparent,
-              start=0., end=1.,
+        Layer(material=Material.transparent, depth=1.,
               mu_a=0., mu_s=1., g=0.9, n=1.5),
-        Layer(material=Material.scattering,
-              start=1., end=2.,
+        Layer(material=Material.scattering, depth=1.,
               mu_a=1., mu_s=1., g=0.9, n=1.5),
-        Layer(material=Material.transparent,
-              start=2., end=3.,
+        Layer(material=Material.transparent, depth=1.,
               mu_a=1., mu_s=1., g=0.9, n=1.5)
     ])
 

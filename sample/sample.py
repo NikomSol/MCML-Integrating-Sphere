@@ -15,16 +15,15 @@ class Sample:
             self.n_table = []
             return
 
-        for i in range(len(layers) - 1):
-            assert layers[i].end == layers[i + 1].start
-
         self.calc_boundaries_list()
         self.calc_property_tables()
 
     def calc_boundaries_list(self):
         layers = self.layers
-        boundaries_list = np.array([layer.start for layer in layers])
-        self.boundaries_list = np.append(boundaries_list, layers[-1].end)
+        depth_list = np.array([layer.depth for layer in layers])
+        self.boundaries_list = np.append(0, np.cumsum(depth_list))
+        if np.any(depth_list <= 0):
+            raise ValueError('There is Layer with negative or zero depth')
 
     def get_func_layer_index(self):
         boundaries_list = self.boundaries_list

@@ -61,9 +61,8 @@ def direct_problem_cfg():
 
 @pytest.fixture
 def sample_blb_a():
-    return Sample([Layer(material=Material.transparent,
-                         start=0., end=1., n=1.5,
-                         mu_a=1., mu_s=0., g=1)])
+    return Sample([Layer(material=Material.transparent, depth=1., 
+                         n=1.5, mu_a=1., mu_s=0., g=1)])
 
 
 @pytest.fixture
@@ -90,7 +89,7 @@ def test_direct_problem_blb_a(direct_problem_blb_a):
     layer = direct_problem_blb_a.sample.layers[0]
     mu_a = layer.mu_a
     mu_s = layer.mu_s
-    z = layer.end - layer.start
+    z = layer.depth
     n = layer.n
 
     trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
@@ -104,9 +103,8 @@ def test_direct_problem_blb_a(direct_problem_blb_a):
 
 @pytest.fixture
 def sample_blb_s():
-    return Sample([Layer(material=Material.scattering,
-                         start=0., end=0.5, n=2.5,
-                         mu_a=0, mu_s=0.5, g=0.5)])
+    return Sample([Layer(material=Material.scattering, depth=0.5,
+                         n=2.5, mu_a=0, mu_s=0.5, g=0.5)])
 
 
 @pytest.fixture
@@ -133,7 +131,7 @@ def test_direct_problem_blb_s(direct_problem_blb_s):
     layer = direct_problem_blb_s.sample.layers[0]
     mu_a = layer.mu_a
     mu_s = layer.mu_s
-    z = layer.end - layer.start
+    z = layer.depth
     n = layer.n
 
     trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
@@ -148,9 +146,8 @@ def test_direct_problem_blb_s(direct_problem_blb_s):
 
 @pytest.fixture
 def sample_blb_as():
-    return Sample([Layer(material=Material.scattering,
-                         start=0., end=0.5, n=2.5,
-                         mu_a=0.5, mu_s=0.5, g=0.5)])
+    return Sample([Layer(material=Material.scattering, depth=0.5,
+                         n=2.5, mu_a=0.5, mu_s=0.5, g=0.5)])
 
 
 @pytest.fixture
@@ -177,7 +174,7 @@ def test_direct_problem_blb_as(direct_problem_blb_as):
     layer = direct_problem_blb_as.sample.layers[0]
     mu_a = layer.mu_a
     mu_s = layer.mu_s
-    z = layer.end - layer.start
+    z = layer.depth
     n = layer.n
 
     trans, refl, losses = collamated_parameters(z * (mu_a + mu_s), ((n - 1) / (n + 1))**2)
