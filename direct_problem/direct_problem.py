@@ -62,7 +62,10 @@ class DirectProblem:
                 # Check leave z-area
                 if np.isinf(p_move[2, 1]):
                     break
-                # Check small weight and leave xy-area
+                # Check leave xy-area
+                if p_move[2, 0] == 0:
+                    break
+                # Check small weight
                 p_term = term(p_move)
                 if p_term[2, 0] == 0:
                     break
@@ -117,6 +120,7 @@ class DirectProblem:
             # Создание случайной безразмерной величины длины
             l_rand = -np.log(np.random.random(1))[0]
             while l_rand > l_rand_tol:
+                # FIXME Перенести проверку на уход из расчетной области 50х50 сюды
 
                 # Определяем текущие границы и свойства
                 layer_index = int(p[2, 1])
@@ -168,6 +172,11 @@ class DirectProblem:
                 p = reflection(p)
                 if np.isinf(p[2, 1]):
                     break
+                
+                # Проверка вылета за расчетную XY - область
+                if p[0, 1] > 50 or p[0, 2] > 50:
+                    p[2, 0] = 0
+                    break
 
             return p
 
@@ -218,10 +227,6 @@ class DirectProblem:
         # @njit(fastmath=True)
         def term(old_p):
             p = old_p * 1.
-
-            if p[0, 0] > 50 or p[0, 1] > 50:
-                p[2, 0] = 0
-                return p
 
             mass = p[2, 0]
             threshold_m = 10 ** -4
@@ -328,9 +333,10 @@ class DirectProblem:
 
             if np.isinf(p_move[2, 1]):
                 _storage += p_gen[2, 0] - p_move[2, 0]
+            elif p_move[2, 0] == 0:
+                None
             elif p_term[2, 0] == 0:
-                if not (p_term[0, 0] > 50 or p_term[0, 1] > 50):
-                    _storage += p_gen[2, 0]
+                _storage += p_gen[2, 0]
             else:
                 raise ValueError('Photon in sample with mass left trace cyrcle')
             return _storage
